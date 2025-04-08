@@ -1,0 +1,55 @@
+# .github/workflows/main.yml
+
+name: Node.js CI/CD Pipeline
+
+# Trigger the workflow on push or pull request events to the main branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+
+    steps:
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js environment
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'  # Use Node.js version 18
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build the application
+      - name: Build
+        run: |
+          npm run build
+
+      # Step 5: Build Docker image
+      - name: Build Docker Image
+        run: docker build --platform linux/arm64 -t "home" .
+
+      # Step 6: Tag Docker image
+      - name: Tag Docker Image
+        run: docker tag home ${{ secrets.DOCKER_HUB_USERNAME }}/home
+
+      # Step 7: Optional: Log in to Docker Hub and push Docker image
+      # Uncomment these steps if you want to push the Docker image to Docker Hub
+      # Ensure you have added DOCKER_HUB_USERNAME and DOCKER_HUB_TOKEN secrets in your GitHub repository
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/home
