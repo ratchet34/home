@@ -11,7 +11,9 @@ const Recipes = () => {
 
   const fetchIngredients = async () => {
     try {
-      const response = await fetch("/api/ingredients");
+      const response = await fetch("/api/ingredients", {
+        credentials: "include",
+      });
       if (!response.ok) throw new Error("Failed to fetch ingredients");
       const data = await response.json();
       setIngredientOptions(data.map((item) => ({ value: item.name })));
@@ -27,6 +29,7 @@ const Recipes = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
+        credentials: "include",
       });
       if (!response.ok) throw new Error("Failed to add new ingredient");
       const data = await response.json();

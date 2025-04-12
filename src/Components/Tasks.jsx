@@ -22,6 +22,7 @@ const Tasks = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ task }),
+      credentials: "include",
     }).then(() => {
       getTasks();
     });
@@ -34,6 +35,7 @@ const Tasks = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ task }),
+      credentials: "include",
     }).then(() => {
       getTasks();
     });
@@ -71,7 +73,9 @@ const Tasks = () => {
   };
 
   const getUsers = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/users`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
+      credentials: "include",
+    });
     if (!response.ok) {
       console.error("Error fetching users");
       return;
@@ -81,7 +85,9 @@ const Tasks = () => {
   };
 
   const getTasks = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
+      credentials: "include",
+    });
     if (!response.ok) {
       console.error("Error fetching tasks");
       return;

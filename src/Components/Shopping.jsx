@@ -18,19 +18,25 @@ const ShoppingList = () => {
   const [locationSearch, setLocationSearch] = useState("");
 
   const getShoppingItems = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/items`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/items`, {
+      credentials: "include",
+    });
     const data = await response.json();
     setShoppingItem(data);
   };
 
   const getIngredientDictionary = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/ingredients`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/ingredients`, {
+      credentials: "include",
+    });
     const data = await response.json();
     setIngredientOptions(data);
   };
 
   const getLocationDictionary = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/locations`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/locations`, {
+      credentials: "include",
+    });
     const data = await response.json();
     setLocationOptions(data);
   };
@@ -42,6 +48,7 @@ const ShoppingList = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ item }),
+      credentials: "include",
     }).then(() => {
       getShoppingItems();
     });
@@ -54,6 +61,7 @@ const ShoppingList = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ item }),
+      credentials: "include",
     }).then(() => {
       getShoppingItems();
     });
@@ -62,6 +70,7 @@ const ShoppingList = () => {
   const removeShoppingItem = (id) => {
     fetch(`${import.meta.env.VITE_HOST}/shopping/item/${id}`, {
       method: "DELETE",
+      credentials: "include",
     }).then(() => {
       getShoppingItems();
     });
@@ -76,6 +85,7 @@ const ShoppingList = () => {
       body: JSON.stringify({ item: {
         title: ingr,
       }}),
+      credentials: "include",
     })
     .then((response) => response.json())
     .then((data) => {
@@ -87,6 +97,7 @@ const ShoppingList = () => {
   const removeIngredient = (id) => {
     fetch(`${import.meta.env.VITE_HOST}/shopping/ingredient/${id}`, {
       method: "DELETE",
+      credentials: "include",
     }).then(() => {
       getIngredientDictionary();
     });
@@ -101,6 +112,7 @@ const ShoppingList = () => {
       body: JSON.stringify({ item: {
         title: loc,
       } }),
+      credentials: "include",
     }).then(() => {
       getLocationDictionary();
     });
@@ -109,6 +121,7 @@ const ShoppingList = () => {
   const removeLocation = (id) => {
     fetch(`${import.meta.env.VITE_HOST}/shopping/location/${id}`, {
       method: "DELETE",
+      credentials: "include",
     }).then(() => {
       getLocationDictionary();
     });

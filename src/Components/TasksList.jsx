@@ -14,6 +14,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ done: true }),
+      credentials: "include",
     }).then(() => {
       getTasks();
     });
@@ -26,6 +27,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ targetDate: dayjs().add(delay, "days").format("YYYY-MM-DD") }),
+      credentials: "include",
     }).then(() => {
       getTasks();
     });
@@ -34,6 +36,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
   const removeTask = (id) => {
     fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "DELETE",
+      credentials: "include",
     }).then(() => {
       getTasks();
     });

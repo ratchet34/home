@@ -17,6 +17,7 @@ const Login = ({ onLoggedIn }) => {
         username: values.username,
         password: values.password,
       }),
+      credentials: 'include',
     })
       .then((response) => {
         if (!response.ok) {

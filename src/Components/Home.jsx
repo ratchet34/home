@@ -7,13 +7,17 @@ const Home = ({ user }) => {
   const [userOptions, setUserOptions] = useState([]);
 
   const getUsers = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/users`);
+    const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
+      credentials: "include",
+    });
     const data = await response.json();
     setUserOptions(data);
   };
 
   const getTasks = async () => {
-    fetch(`${import.meta.env.VITE_HOST}/tasks/user/${user.id}`)
+    fetch(`${import.meta.env.VITE_HOST}/tasks/user/${user.id}`, {
+      credentials: "include",
+    })
       .then((response) => response.json())
       .then((data) => {
         setTasks(data);
