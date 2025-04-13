@@ -1,0 +1,18 @@
+.task-past-due-date {
+  background-color: #ffe6e6; /* Pastel red for a subtle warning */
+  border: 2px solid #ff9999; /* Slightly darker pastel red for emphasis */
+  color: #cc0000; /* Darker red for text to indicate a problem */
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(255, 153, 153, 0.3); /* Soft shadow for depth */
+  /* font-weight: bold; */
+}
+
+.task-to-do-soon {
+  background-color: #fff5e6; /* Pastel orange for a subtle warning */
+  border: 2px solid #ffcc99; /* Slightly darker pastel orange for emphasis */
+  color: #e65c00; /* Darker orange for text to indicate urgency */
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 4px 6px rgba(255, 204, 153, 0.3); /* Soft shadow for depth */
+}

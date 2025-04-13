@@ -4,16 +4,22 @@ import { FaPlus } from "react-icons/fa";
 import { Modal, Input, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import TasksList from "./TasksList";
+import { MdDoneAll, MdRemoveDone } from "react-icons/md";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState();
-  const [editTaskId, setEditTaskId] = useState();
+
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [editTaskId, setEditTaskId] = useState();
+
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [owner, setOwner] = useState([]);
   const [targetDate, setTargetDate] = useState(null);
+
   const [ownerOptions, setOwnerOptions] = useState();
+
+  const [showDoneTasks, setShowDoneTasks] = useState(false); // State for showing done tasks
 
   const addTask = (task) => {
     fetch(`${import.meta.env.VITE_HOST}/task`, {
@@ -22,7 +28,8 @@ const Tasks = () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ task }),
-      credentials: "include",
+      credentials:
+        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
@@ -34,14 +41,13 @@ const Tasks = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task }),
-      credentials: "include",
+      body: JSON.stringify({ ...task }),
+      credentials:
+        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
   };
-
-
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -58,8 +64,7 @@ const Tasks = () => {
       if (editTaskId) {
         editTask(editTaskId, newTask);
         setEditTaskId(null);
-      }
-      else addTask(newTask);
+      } else addTask(newTask);
       setTitle("");
       setDescription("");
       setOwner([]);
@@ -74,7 +79,8 @@ const Tasks = () => {
 
   const getUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
-      credentials: "include",
+      credentials:
+        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
     });
     if (!response.ok) {
       console.error("Error fetching users");
@@ -85,9 +91,13 @@ const Tasks = () => {
   };
 
   const getTasks = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
-      credentials: "include",
-    });
+    const response = await fetch(
+      `${import.meta.env.VITE_HOST}/tasks${showDoneTasks ? "" : "?showDone=true"}`,
+      {
+        credentials:
+          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+      }
+    );
     if (!response.ok) {
       console.error("Error fetching tasks");
       return;
@@ -108,6 +118,10 @@ const Tasks = () => {
   }, [editTaskId]);
 
   useEffect(() => {
+    getTasks();
+  }, [showDoneTasks]);
+
+  useEffect(() => {
     getUsers();
     getTasks();
   }, []);
@@ -123,9 +137,18 @@ const Tasks = () => {
         >
           To-Do List
         </Typography.Title>
-        <Tooltip title="Add new task">
-          <Button onClick={showModal} icon={<FaPlus />} shape="circle" />
-        </Tooltip>
+        <Flex gap="small">
+          <Tooltip title="Show done tasks">
+            <Button
+              onClick={() => setShowDoneTasks((prev) => !prev)}
+              icon={showDoneTasks ? <MdRemoveDone /> : <MdDoneAll />}
+              shape="circle"
+            />
+          </Tooltip>
+          <Tooltip title="Add new task">
+            <Button onClick={showModal} icon={<FaPlus />} shape="circle" />
+          </Tooltip>
+        </Flex>
       </Flex>
       <Modal
         title="Add New Task"
@@ -175,7 +198,12 @@ const Tasks = () => {
         />
       </Modal>
       <Spin spinning={!tasks?.length} size="large" tip="Loading tasks...">
-        <TasksList tasks={tasks} getTasks={getTasks} setEditTaskId={setEditTaskId} ownerOptions={ownerOptions} />
+        <TasksList
+          tasks={tasks}
+          getTasks={getTasks}
+          setEditTaskId={setEditTaskId}
+          ownerOptions={ownerOptions}
+        />
       </Spin>
     </Flex>
   );

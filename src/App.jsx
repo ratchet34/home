@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Button, Flex, Layout, Menu } from "antd";
-import "./App.css";
+import { Layout, Menu, Button, Avatar, Typography, Space } from "antd";
 import { FaHome, FaList } from "react-icons/fa";
 import { CiCircleList, CiShoppingCart } from "react-icons/ci";
 import { Route, Routes, useNavigate } from "react-router";
-import Tasks from "./Components/Tasks";
-import Login from "./Components/Login";
-import Home from "./Components/Home";
-import ShoppingList from "./Components/Shopping";
-import Recipes from "./Components/Recipes";
+import Tasks from "./Components/Desktop/Tasks";
+import Login from "./Components/Desktop/Login";
+import Home from "./Components/Desktop/Home";
+import ShoppingList from "./Components/Desktop/Shopping";
+import Recipes from "./Components/Desktop/Recipes";
+import "./App.css";
+import { FaPowerOff } from "react-icons/fa6";
 
 const { Header, Content, Footer, Sider } = Layout;
+const { Title } = Typography;
 
 function App() {
   const navigate = useNavigate();
@@ -19,19 +21,28 @@ function App() {
 
   const menuItems = [
     {
+      key: "0",
+      icon: <FaHome />,
+      label: "Home",
+      onClick: () => navigate("/"),
+    },
+    {
       key: "1",
       icon: <CiCircleList />,
-      label: <a onClick={() => navigate('/tasks')}>Tasks List</a>,
+      label: "Tasks List",
+      onClick: () => navigate("/tasks"),
     },
     {
       key: "2",
-      label: <a onClick={() => navigate('/shopping-list')}>Shopping List</a>,
       icon: <CiShoppingCart />,
+      label: "Shopping List",
+      onClick: () => navigate("/shopping-list"),
     },
     {
       key: "3",
-      label: <a onClick={() => navigate('/recipes')}>Recipes</a>,
       icon: <FaList />,
+      label: "Recipes",
+      onClick: () => navigate("/recipes"),
     },
   ];
 
@@ -39,12 +50,32 @@ function App() {
     setUser(user);
     setCurrent();
     navigate("/");
-  }
+  };
+
+  const logout = () => {
+    fetch(import.meta.env.VITE_HOST + "/users/logout", {
+      method: "GET",
+      credentials:
+        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+    })
+      .then((response) => {
+        if (response.ok) {
+          setUser(null);
+          navigate("/login");
+        } else {
+          console.error("Failed to logout");
+        }
+      })
+      .catch((error) => {
+        console.error("Error during logout:", error);
+      });
+  };
 
   useEffect(() => {
     if (window.location.pathname !== "/login") {
       fetch(import.meta.env.VITE_HOST + "/users/check-auth", {
-        credentials: "include",
+        credentials:
+          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
       })
         .then((response) => response.json())
         .then((data) => {
@@ -61,55 +92,103 @@ function App() {
           navigate("/login");
         });
     }
-  }, []);
+  }, [current]);
 
   return (
-    <Layout
-      style={{
-        minHeight: "100vh",
-        minWidth: "100vw",
-      }}
-    >
-      <Sider>
-        <Flex
-          justify="center"
-          align="center"
-          style={{ height: "64px", marginTop: "4px" }}
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Sidebar */}
+      <Sider
+        theme="dark"
+        breakpoint="lg"
+        collapsedWidth="80"
+        style={{
+          height: "100vh",
+          left: 0,
+        }}
+      >
+        <div
+          style={{
+            height: "64px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            color: "#fff",
+            fontSize: "20px",
+            fontWeight: "bold",
+          }}
         >
-          <Button color="default" size="large" icon={<FaHome />} onClick={() => navigate("/")}>
-            Home
-          </Button>
-        </Flex>
+          Home Dashboard
+        </div>
         <Menu
           theme="dark"
-          defaultSelectedKeys={[]}
           mode="inline"
-          items={menuItems}
           selectedKeys={[current]}
           onClick={(e) => setCurrent(e.key)}
+          items={menuItems}
         />
       </Sider>
+
+      {/* Main Layout */}
       <Layout>
-        {/* <Header
-          style={{
-            padding: 0,
-          }}
-        /> */}
+        {user && (
+          /* Header */
+          <Header
+            style={{
+              background: "#fff",
+              padding: "0 16px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+            }}
+          >
+            <Title level={4} style={{ margin: 0 }}>
+              Welcome, {user?.username || "Guest"}
+            </Title>
+            <Space>
+              <Avatar style={{ backgroundColor: "#87d068" }}>
+                {user?.username?.charAt(0).toUpperCase() || "G"}
+              </Avatar>
+              <Button type="primary" onClick={logout} icon={<FaPowerOff />}>
+                Logout
+              </Button>
+            </Space>
+          </Header>
+        )}
         <Content
           style={{
-            margin: "0 16px",
+            margin: "16px",
+            padding: "24px",
+            background: "#fff",
+            borderRadius: "8px",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
           }}
         >
-          <div className="content-wrapper">
-            <Routes>
-              <Route path="/tasks" element={<Tasks />} />
-              <Route path="/shopping-list" element={<ShoppingList />} />
-              <Route path="/recipes" element={<Recipes />} />
-              <Route path="/login" element={<Login onLoggedIn={onLoggedIn} />} />
-              <Route path="/" element={<Home user={user} />} />
-            </Routes>
-          </div>
+          <Routes>
+            <Route path="/tasks" element={<Tasks />} />
+            <Route path="/shopping-list" element={<ShoppingList />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/login" element={<Login onLoggedIn={onLoggedIn} />} />
+            <Route path="/" element={<Home user={user} />} />
+          </Routes>
         </Content>
+        {/* Footer */}
+        <Footer
+          style={{
+            textAlign: "center",
+            background: "#f0f2f5",
+            padding: "12px 24px",
+          }}
+        >
+          © 2025 Home Dashboard. All Rights Reserved.{" "}
+          <a
+            href="https://github.com/ratchet34/home/issues/new"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Report a Bug
+          </a>
+        </Footer>
       </Layout>
     </Layout>
   );

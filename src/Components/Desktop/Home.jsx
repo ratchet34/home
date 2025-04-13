@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import TasksList from './TasksList';
-import { Spin } from 'antd';
+import React, { useEffect, useState } from "react";
+import PropTypes from "prop-types";
+import TasksList from "./TasksList";
+import { Spin } from "antd";
 
 const Home = ({ user }) => {
   const [tasks, setTasks] = useState();
@@ -8,7 +9,7 @@ const Home = ({ user }) => {
 
   const getUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
-      credentials: "include",
+      // credentials: import.meta.env.NODE_ENV === 'production' ? 'include' : undefined,
     });
     const data = await response.json();
     setUserOptions(data);
@@ -16,7 +17,8 @@ const Home = ({ user }) => {
 
   const getTasks = async () => {
     fetch(`${import.meta.env.VITE_HOST}/tasks/user/${user.id}`, {
-      credentials: "include",
+      credentials:
+        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
     })
       .then((response) => response.json())
       .then((data) => {
@@ -32,7 +34,6 @@ const Home = ({ user }) => {
   }, []);
 
   useEffect(() => {
-    console.log(user)
     if (user?.id) {
       getTasks();
     }
@@ -40,13 +41,23 @@ const Home = ({ user }) => {
 
   return (
     <div>
-      <h1>Welcome Home {user?.username}</h1>
       <h2>Your Tasks</h2>
       <Spin spinning={!tasks?.length} size="large" tip="Loading tasks...">
-        <TasksList tasks={tasks} getTasks={getTasks} ownerOptions={userOptions} />
+        <TasksList
+          tasks={tasks}
+          getTasks={getTasks}
+          ownerOptions={userOptions}
+        />
       </Spin>
     </div>
   );
+};
+
+Home.propTypes = {
+  user: PropTypes.shape({
+    id: PropTypes.string,
+    username: PropTypes.string,
+  }),
 };
 
 export default Home;

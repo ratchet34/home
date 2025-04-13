@@ -1,5 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { AutoComplete, Input, Button, List, Form, message, Modal, Flex, Typography, Tooltip } from "antd";
+import {
+  AutoComplete,
+  Input,
+  Button,
+  List,
+  Form,
+  message,
+  Modal,
+  Flex,
+  Typography,
+  Tooltip,
+} from "antd";
 import { FaPlus } from "react-icons/fa";
 
 const Recipes = () => {
@@ -12,7 +23,8 @@ const Recipes = () => {
   const fetchIngredients = async () => {
     try {
       const response = await fetch("/api/ingredients", {
-        credentials: "include",
+        credentials:
+          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
       });
       if (!response.ok) throw new Error("Failed to fetch ingredients");
       const data = await response.json();
@@ -29,7 +41,8 @@ const Recipes = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
-        credentials: "include",
+        credentials:
+          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
       });
       if (!response.ok) throw new Error("Failed to add new ingredient");
       const data = await response.json();
@@ -70,8 +83,7 @@ const Recipes = () => {
     setIsModalVisible(true);
   };
 
-  const handleOk = () => {
-  }
+  const handleOk = () => {};
 
   useEffect(() => {
     fetchIngredients();
@@ -100,12 +112,7 @@ const Recipes = () => {
           <Button key="cancel" onClick={handleCancel}>
             Cancel
           </Button>,
-          <Button
-            key="ok"
-            type="primary"
-            onClick={handleOk}
-            loading={loading}
-          >
+          <Button key="ok" type="primary" onClick={handleOk} loading={loading}>
             OK
           </Button>,
         ]}

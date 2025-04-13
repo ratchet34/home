@@ -1,36 +1,19 @@
+import { defineConfig } from "eslint/config";
 import js from "@eslint/js";
 import globals from "globals";
-import reactHooks from "eslint-plugin-react-hooks";
-import reactRefresh from "eslint-plugin-react-refresh";
-import eslintConfigPrettier from "eslint-config-prettier/flat";
+import pluginReact from "eslint-plugin-react";
+import prettier from "eslint-config-prettier";
 
-export default [
-  { ignores: ["dist"] },
+export default defineConfig([
   {
-    files: ["**/*.{js,jsx}"],
-    languageOptions: {
-      ecmaVersion: 2020,
-      globals: globals.browser,
-      parserOptions: {
-        ecmaVersion: "latest",
-        ecmaFeatures: { jsx: true },
-        sourceType: "module",
-      },
-    },
-    plugins: {
-      "react-hooks": reactHooks,
-      "react-refresh": reactRefresh,
-    },
-    rules: {
-      ...js.configs.recommended.rules,
-      ...reactHooks.configs.recommended.rules,
-      "no-undef": "error",
-      "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z_]" }],
-      "react-refresh/only-export-components": [
-        "warn",
-        { allowConstantExport: true },
-      ],
-    },
+    files: ["**/*.{js,mjs,cjs,jsx}"],
+    plugins: { js },
+    extends: ["js/recommended"],
   },
-  eslintConfigPrettier,
-];
+  {
+    files: ["**/*.{js,mjs,cjs,jsx}"],
+    languageOptions: { globals: globals.browser },
+  },
+  pluginReact.configs.flat.recommended,
+  prettier,
+]);

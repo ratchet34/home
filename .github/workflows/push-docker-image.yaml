@@ -5,9 +5,9 @@ name: Node.js CI/CD Pipeline
 # Trigger the workflow on push or pull request events to the main branch
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
@@ -22,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Use Node.js version 18
+          node-version: "18" # Use Node.js version 18
 
       # Step 3: Install dependencies
       - name: Install dependencies
