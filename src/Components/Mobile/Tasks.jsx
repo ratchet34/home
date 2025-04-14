@@ -1,32 +1,52 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { StyleSheet, Appearance } from "react-native";
-import { Button, Dialog, FAB, Portal, TextInput } from "react-native-paper";
+import {
+  Button,
+  Dialog,
+  FAB,
+  Portal,
+  TextInput,
+  HelperText,
+} from "react-native-paper";
 import { FaPlus } from "react-icons/fa";
 import dayjs from "dayjs";
 import { DatePickerInput } from "react-native-paper-dates";
 import { PaperSelect } from "react-native-paper-select";
 import { FlatList, View } from "react-native-web";
 import TaskRenderer from "./TaskRenderer";
+import { HomeContext } from "../../HomeContext";
 
 const Tasks = () => {
+  const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
   const [tasks, setTasks] = useState([]);
   const [editTaskId, setEditTaskId] = useState(null);
   const [taskForm, setTaskForm] = useState({
     title: "",
     description: "",
     targetDate: "",
-    owner: undefined,
+    owner: [],
   });
   const [ownerOptions, setOwnerOptions] = useState([]);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  // const [menuVisible, setMenuVisible] = useState(false);
+  const [errors, setErrors] = useState({});
 
   const fetchTasks = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error fetching tasks. Please try again.",
+        type: "error",
+      });
+      return;
+    }
     const data = await response.json();
     setTasks(data);
   };
@@ -36,11 +56,41 @@ const Tasks = () => {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error fetching users. Please try again.",
+        type: "error",
+      });
+      return;
+    }
     const data = await response.json();
     setOwnerOptions(data);
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (!taskForm.title.trim()) {
+      newErrors.title = "Title is required.";
+    }
+    if (!taskForm.owner || taskForm.owner.length === 0) {
+      newErrors.owner = "At least one owner is required.";
+    }
+    if (!taskForm.targetDate) {
+      newErrors.targetDate = "Target date is required.";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleSaveTask = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
     const method = editTaskId ? "PATCH" : "PUT";
     const url = editTaskId
       ? `${import.meta.env.VITE_HOST}/task/${editTaskId}`
@@ -50,7 +100,7 @@ const Tasks = () => {
       owner: taskForm?.owner?.map((item) => item._id),
     };
 
-    await fetch(url, {
+    const response = await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -59,6 +109,17 @@ const Tasks = () => {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error saving task. Please try again.",
+        type: "error",
+      });
+      return;
+    }
 
     setIsDialogVisible(false);
     setTaskForm({ title: "", description: "", targetDate: "", owner: [] });
@@ -67,16 +128,31 @@ const Tasks = () => {
   };
 
   const handleDeleteTask = async (id) => {
-    await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "DELETE",
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+    });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error deleting task. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Task deleted successfully.",
+      type: "success",
     });
     fetchTasks();
   };
 
   const handleMarkAsDone = async (id) => {
-    await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -85,11 +161,26 @@ const Tasks = () => {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error marking task as done. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Task completed successfully.",
+      type: "success",
+    });
     fetchTasks();
   };
 
   const handleSnoozeTask = async (id, delay) => {
-    await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -99,6 +190,21 @@ const Tasks = () => {
       }),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+    });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error snoozing task. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Task snoozed successfully.",
+      type: "success",
     });
     fetchTasks();
   };
@@ -116,7 +222,10 @@ const Tasks = () => {
         renderItem={({ item }) => (
           <TaskRenderer
             task={item}
-            ownerOptions={ownerOptions}
+            owners={item.owner?.map(
+              (ownerId) =>
+                ownerOptions.find((option) => option._id === ownerId)?.username
+            )}
             handleMarkAsDone={handleMarkAsDone}
             handleSnoozeTask={handleSnoozeTask}
             handleDeleteTask={handleDeleteTask}
@@ -138,6 +247,7 @@ const Tasks = () => {
             targetDate: "",
             owner: [],
           });
+          setErrors({});
           setIsDialogVisible(true);
         }}
       />
@@ -155,7 +265,12 @@ const Tasks = () => {
               value={taskForm.title}
               onChangeText={(text) => setTaskForm({ ...taskForm, title: text })}
               style={styles.input}
+              error={!!errors.title}
             />
+            {errors.title && (
+              <HelperText type="error">{errors.title}</HelperText>
+            )}
+
             <TextInput
               label="Description"
               value={taskForm.description}
@@ -164,8 +279,10 @@ const Tasks = () => {
               }
               style={styles.input}
             />
+
             <View style={styles.input}>
               <PaperSelect
+                id="owner-select"
                 label="Owner"
                 value={taskForm?.owner?.map((item) => item.value)}
                 onSelection={(value) =>
@@ -180,8 +297,14 @@ const Tasks = () => {
                 }))}
                 selectedArrayList={taskForm?.owner}
                 multiEnable={true}
+                error={!!errors.owner}
+                containerStyle={{ marginBottom: 0 }}
               />
+              {errors.owner && (
+                <HelperText type="error">{errors.owner}</HelperText>
+              )}
             </View>
+
             <View style={styles.input}>
               <DatePickerInput
                 label="Target Date"
@@ -198,7 +321,11 @@ const Tasks = () => {
                   setIsDatePickerVisible(false);
                 }}
                 theme={Appearance.getColorScheme()}
+                error={!!errors.targetDate}
               />
+              {errors.targetDate && (
+                <HelperText type="error">{errors.targetDate}</HelperText>
+              )}
             </View>
           </Dialog.Content>
           <Dialog.Actions>

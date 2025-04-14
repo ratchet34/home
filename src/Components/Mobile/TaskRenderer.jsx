@@ -9,7 +9,7 @@ import dayjs from "dayjs";
 
 const TaskRenderer = ({
   task,
-  ownerOptions,
+  owners,
   handleMarkAsDone,
   handleSnoozeTask,
   handleDeleteTask,
@@ -26,15 +26,7 @@ const TaskRenderer = ({
           <Chip icon={() => <FaCalendarAlt />}>
             {dayjs(task.targetDate).format("D MMMM, YYYY")}
           </Chip>
-          <Chip icon={() => <FaUser />}>
-            {task.owner
-              ?.map(
-                (ownerId) =>
-                  ownerOptions.find((option) => option._id === ownerId)
-                    ?.username
-              )
-              .join(", ")}
-          </Chip>
+          <Chip icon={() => <FaUser />}>{owners.join(", ")}</Chip>
         </View>
       </Card.Content>
       <Card.Actions style={styles.actions} id="task-actions">
@@ -88,7 +80,7 @@ const styles = StyleSheet.create({
 
 TaskRenderer.propTypes = {
   task: PropTypes.object.isRequired,
-  ownerOptions: PropTypes.array.isRequired,
+  owners: PropTypes.array.isRequired,
   handleMarkAsDone: PropTypes.func.isRequired,
   handleSnoozeTask: PropTypes.func.isRequired,
   handleDeleteTask: PropTypes.func.isRequired,

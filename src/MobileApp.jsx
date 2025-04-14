@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Appearance, Platform } from "react-native";
-import { Appbar, Drawer, PaperProvider, Text } from "react-native-paper";
+import {
+  Appbar,
+  Drawer,
+  PaperProvider,
+  Snackbar,
+  Text,
+} from "react-native-paper";
 import PropTypes from "prop-types";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -10,6 +16,9 @@ import { IconContext } from "react-icons";
 import { FaBars, FaBook, FaListCheck, FaPowerOff } from "react-icons/fa6";
 import Tasks from "./Components/Mobile/Tasks";
 import Login from "./Components/Mobile/Login";
+import { HomeContext } from "./HomeContext";
+import Shopping from "./Components/Mobile/Shopping";
+import useNotifications from "./Components/Mobile/useNotifications";
 
 const HomeScreen = () => (
   <View style={styles.content}>
@@ -25,7 +34,7 @@ const TasksScreen = () => (
 
 const ShoppingScreen = () => (
   <View style={styles.content}>
-    <Text>Your shopping list goes here.</Text>
+    <Shopping />
   </View>
 );
 
@@ -81,6 +90,28 @@ const MobileApp = () => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarType, setSnackbarType] = useState("info");
+
+  const [permissionRequested, setPermissionRequested] = useState(false);
+
+  const redirectToLogin = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const showSnackbarMessage = ({ message, type }) => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setIsSnackbarVisible(true);
+  };
+
+  const [requestPermission] = useNotifications({
+    redirectToLogin,
+    showSnackbarMessage,
+  });
+
   const onLoggedIn = (userData) => {
     setUser(userData);
     setIsAuthenticated(true);
@@ -101,6 +132,17 @@ const MobileApp = () => {
   };
 
   useEffect(() => {
+    if (isAuthenticated) {
+      if (
+        user?.notificationsEnabled !== true &&
+        permissionRequested === false
+      ) {
+        requestPermission(user._id);
+        setPermissionRequested(true);
+      }
+      return;
+    }
+
     const checkAuth = async () => {
       try {
         const response = await fetch(
@@ -124,7 +166,7 @@ const MobileApp = () => {
     };
 
     checkAuth();
-  }, []);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     console.log("User not authenticated, showing login screen.");
@@ -156,45 +198,64 @@ const MobileApp = () => {
             size: "1.5em",
           }}
         >
-          <SafeAreaProvider>
-            <SafeAreaView style={styles.safeArea}>
-              <NavigationContainer>
-                <DrawerNavigator.Navigator
-                  initialRouteName="Home"
-                  drawerContent={(props) => <CustomDrawerContent {...props} />}
-                  screenOptions={{
-                    header: ({ navigation }) => (
-                      <Appbar.Header>
-                        <Appbar.Action
-                          icon={() => <FaBars />}
-                          onPress={() => navigation.toggleDrawer()}
-                        />
-                        <Appbar.Content title="Home Dashboard" />
-                        <Appbar.Action
-                          icon={() => <FaPowerOff />}
-                          onPress={logout}
-                        />
-                      </Appbar.Header>
-                    ),
-                  }}
-                >
-                  <DrawerNavigator.Screen name="Home" component={HomeScreen} />
-                  <DrawerNavigator.Screen
-                    name="Tasks"
-                    component={TasksScreen}
-                  />
-                  <DrawerNavigator.Screen
-                    name="Shopping"
-                    component={ShoppingScreen}
-                  />
-                  <DrawerNavigator.Screen
-                    name="Recipes"
-                    component={RecipesScreen}
-                  />
-                </DrawerNavigator.Navigator>
-              </NavigationContainer>
-            </SafeAreaView>
-          </SafeAreaProvider>
+          <HomeContext value={{ user, redirectToLogin, showSnackbarMessage }}>
+            <SafeAreaProvider>
+              <SafeAreaView style={styles.safeArea}>
+                <View style={{ height: "100dvh" }}>
+                  <NavigationContainer>
+                    <DrawerNavigator.Navigator
+                      initialRouteName="Home"
+                      drawerContent={(props) => (
+                        <CustomDrawerContent {...props} />
+                      )}
+                      screenOptions={{
+                        header: ({ navigation }) => (
+                          <Appbar.Header>
+                            <Appbar.Action
+                              icon={() => <FaBars />}
+                              onPress={() => navigation.toggleDrawer()}
+                            />
+                            <Appbar.Content title="Home Dashboard" />
+                            <Appbar.Action
+                              icon={() => <FaPowerOff />}
+                              onPress={logout}
+                            />
+                          </Appbar.Header>
+                        ),
+                      }}
+                    >
+                      <DrawerNavigator.Screen
+                        name="Home"
+                        component={HomeScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Tasks"
+                        component={TasksScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Shopping"
+                        component={ShoppingScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Recipes"
+                        component={RecipesScreen}
+                      />
+                    </DrawerNavigator.Navigator>
+                  </NavigationContainer>
+                  <Snackbar
+                    visible={isSnackbarVisible}
+                    onDismiss={() => setIsSnackbarVisible(false)}
+                    duration={3000}
+                    icon="close"
+                    onIconPress={() => setIsSnackbarVisible(false)}
+                    style={styles.snackbar[snackbarType]}
+                  >
+                    {snackbarMessage}
+                  </Snackbar>
+                </View>
+              </SafeAreaView>
+            </SafeAreaProvider>
+          </HomeContext>
         </IconContext.Provider>
       </React.Fragment>
     </PaperProvider>
@@ -203,6 +264,7 @@ const MobileApp = () => {
 
 const styles = StyleSheet.create({
   safeArea: {
+    backgroundColor: Appearance.getColorScheme() === "dark" ? "#333" : "#fff",
     height: "100vh",
   },
   content: {
@@ -215,6 +277,21 @@ const styles = StyleSheet.create({
   drawer: {
     backgroundColor: Appearance.getColorScheme() === "dark" ? "#333" : "#fff",
     height: "100%",
+  },
+  snackbar: {
+    error: {
+      backgroundColor: "#F44336",
+    },
+    success: {
+      backgroundColor: "#4CAF50",
+    },
+    warning: {
+      backgroundColor: "#FF9800",
+    },
+    info: {
+      backgroundColor:
+        Appearance.getColorScheme() === "dark" ? "#BB86FC" : "#313033",
+    },
   },
 });
 
