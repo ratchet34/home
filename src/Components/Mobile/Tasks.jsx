@@ -1,28 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet } from "react-native";
-import {
-  Button,
-  Card,
-  Dialog,
-  FAB,
-  Portal,
-  TextInput,
-  IconButton,
-  Paragraph,
-  Chip,
-  Text,
-} from "react-native-paper";
-import {
-  FaCheck,
-  FaClock,
-  FaEdit,
-  FaTrash,
-  FaPlus,
-  FaCalendarAlt,
-  FaUser,
-} from "react-icons/fa";
+import { StyleSheet, Appearance } from "react-native";
+import { Button, Dialog, FAB, Portal, TextInput } from "react-native-paper";
+import { FaPlus } from "react-icons/fa";
 import dayjs from "dayjs";
-import { DatePickerInput, DatePickerModal } from "react-native-paper-dates";
+import { DatePickerInput } from "react-native-paper-dates";
+import { PaperSelect } from "react-native-paper-select";
+import { FlatList, View } from "react-native-web";
+import TaskRenderer from "./TaskRenderer";
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -31,11 +15,12 @@ const Tasks = () => {
     title: "",
     description: "",
     targetDate: "",
-    owner: [],
+    owner: undefined,
   });
   const [ownerOptions, setOwnerOptions] = useState([]);
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
+  // const [menuVisible, setMenuVisible] = useState(false);
 
   const fetchTasks = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
@@ -60,13 +45,17 @@ const Tasks = () => {
     const url = editTaskId
       ? `${import.meta.env.VITE_HOST}/task/${editTaskId}`
       : `${import.meta.env.VITE_HOST}/task`;
+    const task = {
+      ...taskForm,
+      owner: taskForm?.owner?.map((item) => item._id),
+    };
 
     await fetch(url, {
       method,
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(taskForm),
+      body: JSON.stringify(task),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
@@ -121,54 +110,22 @@ const Tasks = () => {
 
   return (
     <View style={styles.container}>
-      {tasks.map((task) => (
-        <Card key={task._id} style={styles.card}>
-          <Card.Title title={task.title} />
-          <Card.Content>
-            <Paragraph>{task.description}</Paragraph>
-            <View style={styles.col}>
-              <Chip icon={() => <FaCalendarAlt />}>{task.targetDate}</Chip>
-              <Chip icon={() => <FaUser />}>
-                {task.owner
-                  ?.map(
-                    (ownerId) =>
-                      ownerOptions.find((option) => option._id === ownerId)
-                        ?.username
-                  )
-                  .join(", ")}
-              </Chip>
-            </View>
-          </Card.Content>
-          <Card.Actions>
-            <IconButton
-              icon={() => <FaCheck />}
-              onPress={() => handleMarkAsDone(task._id)}
-            />
-            <IconButton
-              icon={() => <FaClock />}
-              onPress={() => handleSnoozeTask(task._id, 1)}
-            />
-            <IconButton
-              icon={() => <FaEdit />}
-              onPress={() => {
-                setEditTaskId(task._id);
-                setTaskForm({
-                  title: task.title,
-                  description: task.description,
-                  targetDate: task.targetDate,
-                  owner: task.owner,
-                });
-                setIsDialogVisible(true);
-              }}
-            />
-            <IconButton
-              icon={() => <FaTrash />}
-              onPress={() => handleDeleteTask(task._id)}
-            />
-          </Card.Actions>
-        </Card>
-      ))}
-
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <TaskRenderer
+            task={item}
+            ownerOptions={ownerOptions}
+            handleMarkAsDone={handleMarkAsDone}
+            handleSnoozeTask={handleSnoozeTask}
+            handleDeleteTask={handleDeleteTask}
+            setEditTaskId={setEditTaskId}
+            setTaskForm={setTaskForm}
+            setIsDialogVisible={setIsDialogVisible}
+          />
+        )}
+      />
       {/* Floating Action Button */}
       <FAB
         style={styles.fab}
@@ -208,33 +165,39 @@ const Tasks = () => {
               style={styles.input}
             />
             <View style={styles.input}>
-              <TextInput
+              <PaperSelect
                 label="Owner"
-                value={taskForm.owner.join(", ")}
-                onChangeText={(text) =>
+                value={taskForm?.owner?.map((item) => item.value)}
+                onSelection={(value) =>
                   setTaskForm({
                     ...taskForm,
-                    owner: text.split(",").map((owner) => owner.trim()),
+                    owner: value.selectedList,
                   })
                 }
-                placeholder="Enter owner IDs separated by commas"
+                arrayList={ownerOptions.map((option) => ({
+                  value: option.username,
+                  _id: option._id,
+                }))}
+                selectedArrayList={taskForm?.owner}
+                multiEnable={true}
               />
             </View>
             <View style={styles.input}>
-              <Text style={{ marginBottom: 8 }}>Target Date</Text>
               <DatePickerInput
-                locale="en"
+                label="Target Date"
+                locale="fr"
                 mode="single"
                 visible={isDatePickerVisible}
                 onDismiss={() => setIsDatePickerVisible(false)}
-                date={taskForm.targetDate}
-                onConfirm={(params) => {
+                value={taskForm.targetDate}
+                onChange={(date) => {
                   setTaskForm({
                     ...taskForm,
-                    targetDate: dayjs(params.date).format("YYYY-MM-DD"),
+                    targetDate: date,
                   });
                   setIsDatePickerVisible(false);
                 }}
+                theme={Appearance.getColorScheme()}
               />
             </View>
           </Dialog.Content>
@@ -251,19 +214,9 @@ const Tasks = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 8,
     flexDirection: "column",
     width: "100%",
-  },
-  card: {
-    flexGrow: 1,
-    alignSelf: "stretch",
-  },
-  col: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    marginTop: 8,
-    gap: ".25em",
+    height: "100%",
   },
   fab: {
     position: "fixed",

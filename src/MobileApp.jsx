@@ -18,7 +18,7 @@ const HomeScreen = () => (
 );
 
 const TasksScreen = () => (
-  <View style={styles.content}>
+  <View style={styles.content} id="tasks-screen">
     <Tasks />
   </View>
 );
@@ -206,9 +206,11 @@ const styles = StyleSheet.create({
     height: "100vh",
   },
   content: {
+    backgroundColor: Appearance.getColorScheme() === "dark" ? "#333" : "#fff",
     justifyContent: "center",
     alignItems: "center",
-    padding: 16,
+    padding: 8,
+    height: "100%",
   },
   drawer: {
     backgroundColor: Appearance.getColorScheme() === "dark" ? "#333" : "#fff",

@@ -27,7 +27,7 @@ const Tasks = () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ task }),
+      body: JSON.stringify({ ...task }),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
