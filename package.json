@@ -42,5 +42,8 @@
     "prettier": "3.5.3",
     "vite": "^6.2.0",
     "vite-plugin-react-native-web": "^2.1.1"
+  },
+  "overrides": {
+    "use-latest-callback": "0.2.3"
   }
 }
