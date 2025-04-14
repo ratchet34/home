@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Appearance, Platform } from "react-native";
 import { Appbar, Drawer, PaperProvider, Text } from "react-native-paper";
@@ -147,7 +148,7 @@ const MobileApp = () => {
           <style type="text/css">{`
         @font-face {
           font-family: 'MaterialCommunityIcons';
-          src: url(${MaterialCommunityIconsFont}) format('truetype');
+          src: url(${require("react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf")}) format('truetype');
         }
       `}</style>
         ) : null}
