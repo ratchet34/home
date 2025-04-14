@@ -1,4 +1,3 @@
-/* eslint-disable no-undef */
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Appearance, Platform } from "react-native";
 import { Appbar, Drawer, PaperProvider, Text } from "react-native-paper";
@@ -11,7 +10,6 @@ import { IconContext } from "react-icons";
 import { FaBars, FaBook, FaListCheck, FaPowerOff } from "react-icons/fa6";
 import Tasks from "./Components/Mobile/Tasks";
 import Login from "./Components/Mobile/Login";
-import MaterialCommunityIconsFont from "react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf";
 
 const HomeScreen = () => (
   <View style={styles.content}>
@@ -148,7 +146,7 @@ const MobileApp = () => {
           <style type="text/css">{`
         @font-face {
           font-family: 'MaterialCommunityIcons';
-          src: url(${require("react-native-vector-icons/Fonts/MaterialCommunityIcons.ttf")}) format('truetype');
+          src: url('./fonts/MaterialCommunityIcons.ttf') format('truetype');
         }
       `}</style>
         ) : null}
