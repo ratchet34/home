@@ -17,7 +17,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
       },
       body: JSON.stringify({ done: true }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
@@ -33,7 +33,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
         targetDate: dayjs().add(delay, "days").format("YYYY-MM-DD"),
       }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
@@ -43,7 +43,7 @@ const TasksList = ({ tasks, getTasks, setEditTaskId, ownerOptions }) => {
     fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "DELETE",
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });

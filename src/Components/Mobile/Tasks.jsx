@@ -40,7 +40,7 @@ const Tasks = () => {
   const fetchTasks = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     const data = await response.json();
     setTasks(data);
@@ -49,7 +49,7 @@ const Tasks = () => {
   const fetchOwnerOptions = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     const data = await response.json();
     setOwnerOptions(data);
@@ -68,7 +68,7 @@ const Tasks = () => {
       },
       body: JSON.stringify(taskForm),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
 
     setIsDialogVisible(false);
@@ -81,7 +81,7 @@ const Tasks = () => {
     await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "DELETE",
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     fetchTasks();
   };
@@ -94,7 +94,7 @@ const Tasks = () => {
       },
       body: JSON.stringify({ done: true }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     fetchTasks();
   };
@@ -109,7 +109,7 @@ const Tasks = () => {
         targetDate: dayjs().add(delay, "days").format("YYYY-MM-DD"),
       }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     fetchTasks();
   };

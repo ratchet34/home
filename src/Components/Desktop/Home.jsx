@@ -9,7 +9,7 @@ const Home = ({ user }) => {
 
   const getUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
-      // credentials: import.meta.env.NODE_ENV === 'production' ? 'include' : undefined,
+      // credentials: import.meta.env.VITE_ENV === 'production' ? 'include' : undefined,
     });
     const data = await response.json();
     setUserOptions(data);
@@ -18,7 +18,7 @@ const Home = ({ user }) => {
   const getTasks = async () => {
     fetch(`${import.meta.env.VITE_HOST}/tasks/user/${user.id}`, {
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     })
       .then((response) => response.json())
       .then((data) => {

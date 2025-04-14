@@ -56,7 +56,7 @@ function App() {
     fetch(import.meta.env.VITE_HOST + "/users/logout", {
       method: "GET",
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     })
       .then((response) => {
         if (response.ok) {
@@ -75,7 +75,7 @@ function App() {
     if (window.location.pathname !== "/login") {
       fetch(import.meta.env.VITE_HOST + "/users/check-auth", {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       })
         .then((response) => response.json())
         .then((data) => {

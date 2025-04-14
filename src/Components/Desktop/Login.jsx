@@ -19,7 +19,7 @@ const Login = ({ onLoggedIn }) => {
         password: values.password,
       }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     })
       .then((response) => {
         if (!response.ok) {

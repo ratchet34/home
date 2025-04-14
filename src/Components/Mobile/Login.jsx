@@ -19,7 +19,7 @@ const Login = ({ onLoggedIn }) => {
         },
         body: JSON.stringify({ username, password }),
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       });
 
       if (!response.ok) {

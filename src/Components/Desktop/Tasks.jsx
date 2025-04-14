@@ -29,7 +29,7 @@ const Tasks = () => {
       },
       body: JSON.stringify({ task }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
@@ -43,7 +43,7 @@ const Tasks = () => {
       },
       body: JSON.stringify({ ...task }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getTasks();
     });
@@ -80,7 +80,7 @@ const Tasks = () => {
   const getUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     if (!response.ok) {
       console.error("Error fetching users");
@@ -95,7 +95,7 @@ const Tasks = () => {
       `${import.meta.env.VITE_HOST}/tasks${showDoneTasks ? "" : "?showDone=true"}`,
       {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
     if (!response.ok) {

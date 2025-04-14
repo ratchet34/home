@@ -24,7 +24,7 @@ const Recipes = () => {
     try {
       const response = await fetch("/api/ingredients", {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       });
       if (!response.ok) throw new Error("Failed to fetch ingredients");
       const data = await response.json();
@@ -42,7 +42,7 @@ const Recipes = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name }),
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       });
       if (!response.ok) throw new Error("Failed to add new ingredient");
       const data = await response.json();

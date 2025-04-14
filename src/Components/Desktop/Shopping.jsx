@@ -42,7 +42,7 @@ const ShoppingList = () => {
       `${import.meta.env.VITE_HOST}/shopping/items`,
       {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
     const data = await response.json();
@@ -55,7 +55,7 @@ const ShoppingList = () => {
       `${import.meta.env.VITE_HOST}/shopping/ingredients`,
       {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
     const data = await response.json();
@@ -67,7 +67,7 @@ const ShoppingList = () => {
       `${import.meta.env.VITE_HOST}/shopping/locations`,
       {
         credentials:
-          import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
     const data = await response.json();
@@ -82,7 +82,7 @@ const ShoppingList = () => {
       },
       body: JSON.stringify({ item }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     await getShoppingItems();
   };
@@ -95,7 +95,7 @@ const ShoppingList = () => {
       },
       body: JSON.stringify({ item }),
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     await getShoppingItems();
   };
@@ -104,7 +104,7 @@ const ShoppingList = () => {
     fetch(`${import.meta.env.VITE_HOST}/shopping/item/${id}`, {
       method: "DELETE",
       credentials:
-        import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     }).then(() => {
       getShoppingItems();
     });
@@ -126,7 +126,7 @@ const ShoppingList = () => {
             },
           }),
           credentials:
-            import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+            import.meta.env.VITE_ENV === "production" ? "include" : undefined,
         }
       );
       const data = await response.json();
@@ -155,7 +155,7 @@ const ShoppingList = () => {
             },
           }),
           credentials:
-            import.meta.env.NODE_ENV === "production" ? "include" : undefined,
+            import.meta.env.VITE_ENV === "production" ? "include" : undefined,
         }
       );
       const data = await response.json();
