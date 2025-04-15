@@ -185,7 +185,7 @@ const MobileApp = () => {
           <style type="text/css">{`
         @font-face {
           font-family: 'MaterialCommunityIcons';
-          src: url('./fonts/MaterialCommunityIcons.ttf') format('truetype');
+          src: url('/fonts/MaterialCommunityIcons.ttf') format('truetype');
         }
       `}</style>
         ) : null}

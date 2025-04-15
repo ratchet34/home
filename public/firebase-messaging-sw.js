@@ -51,19 +51,3 @@ messaging.onBackgroundMessage(function (payload) {
     notificationOptions
   );
 });
-
-messaging.onMessage((payload) => {
-  console.log("Message received. ", payload);
-  // Handle the message as needed
-  // For example, show a notification or update the UI
-  const notificationTitle = payload.notification.title;
-  const notificationOptions = {
-    body: payload.notification.body,
-    icon: "/icon-192.png",
-  };
-
-  return self.registration.showNotification(
-    notificationTitle,
-    notificationOptions
-  );
-});
