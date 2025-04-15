@@ -133,10 +133,7 @@ const MobileApp = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      if (
-        user?.notificationsEnabled !== true &&
-        permissionRequested === false
-      ) {
+      if (permissionRequested === false) {
         requestPermission(user._id);
         setPermissionRequested(true);
       }
