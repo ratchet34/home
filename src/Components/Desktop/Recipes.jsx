@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   AutoComplete,
   Input,
@@ -12,8 +12,10 @@ import {
   Tooltip,
 } from "antd";
 import { FaPlus } from "react-icons/fa";
+import { HomeContext } from "../../HomeContext";
 
 const Recipes = () => {
+  const { redirectToLogin } = useContext(HomeContext);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [ingredients, setIngredients] = useState([]);
   const [ingredientOptions, setIngredientOptions] = useState([]);
@@ -44,6 +46,10 @@ const Recipes = () => {
         credentials:
           import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       });
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
       if (!response.ok) throw new Error("Failed to add new ingredient");
       const data = await response.json();
       setIngredientOptions((prev) => [...prev, { value: data.name }]);

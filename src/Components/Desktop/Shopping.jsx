@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import {
   Button,
   Card,
@@ -17,8 +17,10 @@ import { FaPlus } from "react-icons/fa";
 import { Modal, Select } from "antd";
 import { MdEdit } from "react-icons/md";
 import { IoMdTrash } from "react-icons/io";
+import { HomeContext } from "../../HomeContext";
 
 const ShoppingList = () => {
+  const { redirectToLogin } = useContext(HomeContext);
   const [form] = Form.useForm();
 
   const [shoppingItems, setShoppingItem] = useState([]);
@@ -45,6 +47,10 @@ const ShoppingList = () => {
           import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     const data = await response.json();
     setShoppingItem(data);
     setItemsLoading(false);
@@ -58,6 +64,10 @@ const ShoppingList = () => {
           import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     const data = await response.json();
     setIngredientOptions(data);
   };
@@ -70,12 +80,16 @@ const ShoppingList = () => {
           import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     const data = await response.json();
     setLocationOptions(data);
   };
 
   const addShoppingItem = async (item) => {
-    await fetch(`${import.meta.env.VITE_HOST}/shopping/item`, {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/item`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -84,30 +98,47 @@ const ShoppingList = () => {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     await getShoppingItems();
   };
 
   const editShoppingItem = async (id, item) => {
-    await fetch(`${import.meta.env.VITE_HOST}/shopping/item/${id}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ item }),
-      credentials:
-        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-    });
+    const response = await fetch(
+      `${import.meta.env.VITE_HOST}/shopping/item/${id}`,
+      {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ item }),
+        credentials:
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+      }
+    );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     await getShoppingItems();
   };
 
-  const removeShoppingItem = (id) => {
-    fetch(`${import.meta.env.VITE_HOST}/shopping/item/${id}`, {
-      method: "DELETE",
-      credentials:
-        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-    }).then(() => {
-      getShoppingItems();
-    });
+  const removeShoppingItem = async (id) => {
+    const response = await fetch(
+      `${import.meta.env.VITE_HOST}/shopping/item/${id}`,
+      {
+        method: "DELETE",
+        credentials:
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+      }
+    );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    getShoppingItems();
   };
 
   const addIngredient = async (ingr) => {
@@ -129,6 +160,10 @@ const ShoppingList = () => {
             import.meta.env.VITE_ENV === "production" ? "include" : undefined,
         }
       );
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
       const data = await response.json();
       form.setFieldValue("ingredient", data.insertedId);
       await getIngredientDictionary();
@@ -158,6 +193,10 @@ const ShoppingList = () => {
             import.meta.env.VITE_ENV === "production" ? "include" : undefined,
         }
       );
+      if (response.status === 401) {
+        redirectToLogin();
+        return;
+      }
       const data = await response.json();
       form.setFieldValue("location", [
         ...form.getFieldValue("location"),

@@ -1,12 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Button, Flex, Spin, Tooltip, Typography } from "antd";
 import { FaPlus } from "react-icons/fa";
 import { Modal, Input, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
 import TasksList from "./TasksList";
 import { MdDoneAll, MdRemoveDone } from "react-icons/md";
+import { HomeContext } from "../../HomeContext";
 
 const Tasks = () => {
+  const { redirectToLogin } = useContext(HomeContext);
   const [tasks, setTasks] = useState();
 
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -22,7 +24,7 @@ const Tasks = () => {
   const [showDoneTasks, setShowDoneTasks] = useState(false); // State for showing done tasks
 
   const addTask = (task) => {
-    fetch(`${import.meta.env.VITE_HOST}/task`, {
+    const response = fetch(`${import.meta.env.VITE_HOST}/task`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -30,13 +32,16 @@ const Tasks = () => {
       body: JSON.stringify({ ...task }),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-    }).then(() => {
-      getTasks();
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    getTasks();
   };
 
   const editTask = (id, task) => {
-    fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
+    const response = fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -44,9 +49,12 @@ const Tasks = () => {
       body: JSON.stringify({ ...task }),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-    }).then(() => {
-      getTasks();
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    getTasks();
   };
 
   const showModal = () => {
@@ -82,6 +90,10 @@ const Tasks = () => {
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     if (!response.ok) {
       console.error("Error fetching users");
       return;
@@ -98,6 +110,10 @@ const Tasks = () => {
           import.meta.env.VITE_ENV === "production" ? "include" : undefined,
       }
     );
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
     if (!response.ok) {
       console.error("Error fetching tasks");
       return;

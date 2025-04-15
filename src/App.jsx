@@ -11,6 +11,7 @@ import Recipes from "./Components/Desktop/Recipes";
 import "./App.css";
 import { FaPowerOff } from "react-icons/fa6";
 import useNotifications from "./Components/Mobile/useNotifications";
+import { HomeContext } from "./HomeContext";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Title } = Typography;
@@ -112,105 +113,110 @@ function App() {
   }, [isAuthenticated]);
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      {/* Sidebar */}
-      <Sider
-        theme="dark"
-        breakpoint="lg"
-        collapsedWidth="80"
-        style={{
-          height: "100vh",
-          left: 0,
-        }}
-      >
-        <div
+    <HomeContext value={{ user, redirectToLogin }}>
+      <Layout style={{ minHeight: "100vh" }}>
+        {/* Sidebar */}
+        <Sider
+          theme="dark"
+          breakpoint="lg"
+          collapsedWidth="80"
           style={{
-            height: "64px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#fff",
-            fontSize: "20px",
-            fontWeight: "bold",
+            height: "100vh",
+            left: 0,
           }}
         >
-          Home Dashboard
-        </div>
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[current]}
-          onClick={(e) => setCurrent(e.key)}
-          items={menuItems}
-        />
-      </Sider>
-
-      {/* Main Layout */}
-      <Layout>
-        {user && (
-          /* Header */
-          <Header
+          <div
             style={{
-              background: "#fff",
-              padding: "0 16px",
+              height: "64px",
               display: "flex",
-              justifyContent: "space-between",
               alignItems: "center",
+              justifyContent: "center",
+              color: "#fff",
+              fontSize: "20px",
+              fontWeight: "bold",
+            }}
+          >
+            Home Dashboard
+          </div>
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[current]}
+            onClick={(e) => setCurrent(e.key)}
+            items={menuItems}
+          />
+        </Sider>
+
+        {/* Main Layout */}
+        <Layout>
+          {user && (
+            /* Header */
+            <Header
+              style={{
+                background: "#fff",
+                padding: "0 16px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              <Title level={4} style={{ margin: 0 }}>
+                Welcome, {user?.username || "Guest"}
+              </Title>
+              <Space>
+                <Avatar style={{ backgroundColor: "#87d068" }}>
+                  {user?.username?.charAt(0).toUpperCase() || "G"}
+                </Avatar>
+                <Button type="primary" onClick={requestPermission}>
+                  Subscribe
+                </Button>
+                <Button type="primary" onClick={logout} icon={<FaPowerOff />}>
+                  Logout
+                </Button>
+              </Space>
+            </Header>
+          )}
+          <Content
+            style={{
+              margin: "16px",
+              padding: "24px",
+              background: "#fff",
+              borderRadius: "8px",
               boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <Title level={4} style={{ margin: 0 }}>
-              Welcome, {user?.username || "Guest"}
-            </Title>
-            <Space>
-              <Avatar style={{ backgroundColor: "#87d068" }}>
-                {user?.username?.charAt(0).toUpperCase() || "G"}
-              </Avatar>
-              <Button type="primary" onClick={requestPermission}>
-                Subscribe
-              </Button>
-              <Button type="primary" onClick={logout} icon={<FaPowerOff />}>
-                Logout
-              </Button>
-            </Space>
-          </Header>
-        )}
-        <Content
-          style={{
-            margin: "16px",
-            padding: "24px",
-            background: "#fff",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <Routes>
-            <Route path="/tasks" element={<Tasks />} />
-            <Route path="/shopping-list" element={<ShoppingList />} />
-            <Route path="/recipes" element={<Recipes />} />
-            <Route path="/login" element={<Login onLoggedIn={onLoggedIn} />} />
-            <Route path="/" element={<Home user={user} />} />
-          </Routes>
-        </Content>
-        {/* Footer */}
-        <Footer
-          style={{
-            textAlign: "center",
-            background: "#f0f2f5",
-            padding: "12px 24px",
-          }}
-        >
-          © 2025 Home Dashboard. All Rights Reserved.{" "}
-          <a
-            href="https://github.com/ratchet34/home/issues/new"
-            target="_blank"
-            rel="noopener noreferrer"
+            <Routes>
+              <Route path="/tasks" element={<Tasks />} />
+              <Route path="/shopping-list" element={<ShoppingList />} />
+              <Route path="/recipes" element={<Recipes />} />
+              <Route
+                path="/login"
+                element={<Login onLoggedIn={onLoggedIn} />}
+              />
+              <Route path="/" element={<Home user={user} />} />
+            </Routes>
+          </Content>
+          {/* Footer */}
+          <Footer
+            style={{
+              textAlign: "center",
+              background: "#f0f2f5",
+              padding: "12px 24px",
+            }}
           >
-            Report a Bug
-          </a>
-        </Footer>
+            © 2025 Home Dashboard. All Rights Reserved.{" "}
+            <a
+              href="https://github.com/ratchet34/home/issues/new"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Report a Bug
+            </a>
+          </Footer>
+        </Layout>
       </Layout>
-    </Layout>
+    </HomeContext>
   );
 }
 
