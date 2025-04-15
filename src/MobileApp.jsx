@@ -19,6 +19,7 @@ import Login from "./Components/Mobile/Login";
 import { HomeContext } from "./HomeContext";
 import Shopping from "./Components/Mobile/Shopping";
 import useNotifications from "./Components/Mobile/useNotifications";
+import "./css/mobile/app.css";
 
 const HomeScreen = () => (
   <View style={styles.content}>
@@ -180,81 +181,71 @@ const MobileApp = () => {
 
   return (
     <PaperProvider>
-      <React.Fragment>
-        {Platform.OS === "web" ? (
-          <style type="text/css">{`
-        @font-face {
-          font-family: 'MaterialCommunityIcons';
-          src: url('/fonts/MaterialCommunityIcons.ttf') format('truetype');
-        }
-      `}</style>
-        ) : null}
-        <IconContext.Provider
-          value={{
-            color: Appearance.getColorScheme() === "dark" ? "#fff" : "#000",
-            size: "1.5em",
-          }}
-        >
-          <HomeContext value={{ user, redirectToLogin, showSnackbarMessage }}>
-            <SafeAreaProvider>
-              <SafeAreaView style={styles.safeArea}>
-                <View style={{ height: "100dvh" }}>
-                  <NavigationContainer>
-                    <DrawerNavigator.Navigator
-                      initialRouteName="Home"
-                      drawerContent={(props) => (
-                        <CustomDrawerContent {...props} />
-                      )}
-                      screenOptions={{
-                        header: ({ navigation }) => (
-                          <Appbar.Header>
-                            <Appbar.Action
-                              icon={() => <FaBars />}
-                              onPress={() => navigation.toggleDrawer()}
-                            />
-                            <Appbar.Content title="Home Dashboard" />
-                            <Appbar.Action
-                              icon={() => <FaPowerOff />}
-                              onPress={logout}
-                            />
-                          </Appbar.Header>
-                        ),
-                      }}
-                    >
-                      <DrawerNavigator.Screen
-                        name="Home"
-                        component={HomeScreen}
-                      />
-                      <DrawerNavigator.Screen
-                        name="Tasks"
-                        component={TasksScreen}
-                      />
-                      <DrawerNavigator.Screen
-                        name="Shopping"
-                        component={ShoppingScreen}
-                      />
-                      <DrawerNavigator.Screen
-                        name="Recipes"
-                        component={RecipesScreen}
-                      />
-                    </DrawerNavigator.Navigator>
-                  </NavigationContainer>
-                  <Snackbar
-                    visible={isSnackbarVisible}
-                    onDismiss={() => setIsSnackbarVisible(false)}
-                    duration={3000}
-                    icon="close"
-                    onIconPress={() => setIsSnackbarVisible(false)}
-                    style={styles.snackbar[snackbarType]}
+      <IconContext.Provider
+        value={{
+          color: Appearance.getColorScheme() === "dark" ? "#fff" : "#000",
+          size: "1.5em",
+        }}
+      >
+        <HomeContext value={{ user, redirectToLogin, showSnackbarMessage }}>
+          <SafeAreaProvider>
+            <SafeAreaView style={styles.safeArea}>
+              <View style={{ height: "100dvh" }}>
+                <NavigationContainer>
+                  <DrawerNavigator.Navigator
+                    initialRouteName="Home"
+                    drawerContent={(props) => (
+                      <CustomDrawerContent {...props} />
+                    )}
+                    screenOptions={{
+                      header: ({ navigation }) => (
+                        <Appbar.Header>
+                          <Appbar.Action
+                            icon={() => <FaBars />}
+                            onPress={() => navigation.toggleDrawer()}
+                          />
+                          <Appbar.Content title="Home Dashboard" />
+                          <Appbar.Action
+                            icon={() => <FaPowerOff />}
+                            onPress={logout}
+                          />
+                        </Appbar.Header>
+                      ),
+                    }}
                   >
-                    {snackbarMessage}
-                  </Snackbar>
-                </View>
-              </SafeAreaView>
-            </SafeAreaProvider>
-          </HomeContext>
-        </IconContext.Provider>
-      </React.Fragment>
+                    <DrawerNavigator.Screen
+                      name="Home"
+                      component={HomeScreen}
+                    />
+                    <DrawerNavigator.Screen
+                      name="Tasks"
+                      component={TasksScreen}
+                    />
+                    <DrawerNavigator.Screen
+                      name="Shopping"
+                      component={ShoppingScreen}
+                    />
+                    <DrawerNavigator.Screen
+                      name="Recipes"
+                      component={RecipesScreen}
+                    />
+                  </DrawerNavigator.Navigator>
+                </NavigationContainer>
+                <Snackbar
+                  visible={isSnackbarVisible}
+                  onDismiss={() => setIsSnackbarVisible(false)}
+                  duration={3000}
+                  icon="close"
+                  onIconPress={() => setIsSnackbarVisible(false)}
+                  style={styles.snackbar[snackbarType]}
+                >
+                  {snackbarMessage}
+                </Snackbar>
+              </View>
+            </SafeAreaView>
+          </SafeAreaProvider>
+        </HomeContext>
+      </IconContext.Provider>
     </PaperProvider>
   );
 };
