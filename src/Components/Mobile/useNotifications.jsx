@@ -15,7 +15,10 @@ const firebaseConfig = {
 
 const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY;
 
-const useNotifications = ({ redirectToLogin, showSnackbarMessage }) => {
+const useNotifications = ({
+  redirectToLogin = () => {},
+  showSnackbarMessage = () => {},
+}) => {
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
 

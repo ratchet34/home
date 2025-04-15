@@ -10,6 +10,7 @@ import ShoppingList from "./Components/Desktop/Shopping";
 import Recipes from "./Components/Desktop/Recipes";
 import "./App.css";
 import { FaPowerOff } from "react-icons/fa6";
+import useNotifications from "./Components/Mobile/useNotifications";
 
 const { Header, Content, Footer, Sider } = Layout;
 const { Title } = Typography;
@@ -18,6 +19,8 @@ function App() {
   const navigate = useNavigate();
   const [current, setCurrent] = useState();
   const [user, setUser] = useState();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [permissionRequested, setPermissionRequested] = useState(false);
 
   const menuItems = [
     {
@@ -46,6 +49,15 @@ function App() {
     },
   ];
 
+  const redirectToLogin = () => {
+    setUser(null);
+    setIsAuthenticated(false);
+  };
+
+  const [requestPermission] = useNotifications({
+    redirectToLogin,
+  });
+
   const onLoggedIn = (user) => {
     setUser(user);
     setCurrent();
@@ -72,27 +84,38 @@ function App() {
   };
 
   useEffect(() => {
-    if (window.location.pathname !== "/login") {
-      fetch(import.meta.env.VITE_HOST + "/users/check-auth", {
-        credentials:
-          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (!data.loggedIn) {
-            navigate("/login");
-            return;
-          }
-          if (data.user) {
-            setUser(data.user);
-          }
-        })
-        .catch((error) => {
-          console.error("Error checking authentication:", error);
-          navigate("/login");
-        });
+    if (isAuthenticated) {
+      if (permissionRequested === false) {
+        requestPermission(user._id);
+        setPermissionRequested(true);
+      }
+      return;
     }
-  }, [current]);
+
+    const checkAuth = async () => {
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_HOST}/users/check-auth`,
+          {
+            credentials:
+              import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+          }
+        );
+        const data = await response.json();
+        if (data.loggedIn) {
+          setUser(data.user);
+          setIsAuthenticated(true);
+        } else {
+          setIsAuthenticated(false);
+        }
+      } catch (error) {
+        console.error("Error checking authentication:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    if (window.location.pathname !== "/login") checkAuth();
+  }, [isAuthenticated]);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
