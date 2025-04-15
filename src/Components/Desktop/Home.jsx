@@ -10,7 +10,8 @@ const Home = () => {
 
   const getUsers = async () => {
     const response = await fetch(`${import.meta.env.VITE_HOST}/users`, {
-      // credentials: import.meta.env.VITE_ENV === 'production' ? 'include' : undefined,
+      credentials:
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
     });
     if (response.status === 401) {
       redirectToLogin();
