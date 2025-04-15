@@ -45,6 +45,7 @@ export default defineConfig({
     },
   },
   build: {
+    commonjsOptions: { transformMixedEsModules: true },
     rollupOptions: {
       plugins: [rollupPlugin([/react-native-vector-icons/])],
     },
