@@ -30,6 +30,9 @@ const rollupPlugin = (matchers) => ({
 
 // https://vite.dev/config/
 export default defineConfig({
+  define: {
+    global: "window",
+  },
   plugins: [react(), reactNativeWeb()],
   // assetsInclude: ['**/*.ttf'],
   server: {
