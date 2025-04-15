@@ -168,7 +168,10 @@ function App() {
                 <Avatar style={{ backgroundColor: "#87d068" }}>
                   {user?.username?.charAt(0).toUpperCase() || "G"}
                 </Avatar>
-                <Button type="primary" onClick={requestPermission}>
+                <Button
+                  type="primary"
+                  onClick={() => requestPermission(user._id)}
+                >
                   Subscribe
                 </Button>
                 <Button type="primary" onClick={logout} icon={<FaPowerOff />}>
