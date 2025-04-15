@@ -84,13 +84,7 @@ function App() {
   };
 
   useEffect(() => {
-    if (isAuthenticated) {
-      if (permissionRequested === false) {
-        requestPermission(user._id);
-        setPermissionRequested(true);
-      }
-      return;
-    }
+    if (isAuthenticated) return;
 
     const checkAuth = async () => {
       try {
@@ -172,6 +166,9 @@ function App() {
               <Avatar style={{ backgroundColor: "#87d068" }}>
                 {user?.username?.charAt(0).toUpperCase() || "G"}
               </Avatar>
+              <Button type="primary" onClick={requestPermission}>
+                Subscribe
+              </Button>
               <Button type="primary" onClick={logout} icon={<FaPowerOff />}>
                 Logout
               </Button>
