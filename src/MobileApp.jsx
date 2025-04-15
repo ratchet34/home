@@ -20,6 +20,7 @@ import { HomeContext } from "./HomeContext";
 import Shopping from "./Components/Mobile/Shopping";
 import useNotifications from "./Components/Mobile/useNotifications";
 import "./css/mobile/app.css";
+import LoadingScreen from "./Components/Mobile/LoadingScreen";
 
 const HomeScreen = () => (
   <View style={styles.content}>
@@ -89,7 +90,7 @@ const DrawerNavigator = createDrawerNavigator();
 
 const MobileApp = () => {
   const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState();
 
   const [isSnackbarVisible, setIsSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -166,8 +167,7 @@ const MobileApp = () => {
     checkAuth();
   }, [isAuthenticated]);
 
-  if (!isAuthenticated) {
-    console.log("User not authenticated, showing login screen.");
+  if (isAuthenticated === false)
     return (
       <PaperProvider>
         <SafeAreaProvider>
@@ -177,77 +177,79 @@ const MobileApp = () => {
         </SafeAreaProvider>
       </PaperProvider>
     );
-  }
 
-  return (
-    <PaperProvider>
-      <IconContext.Provider
-        value={{
-          color: Appearance.getColorScheme() === "dark" ? "#fff" : "#000",
-          size: "1.5em",
-        }}
-      >
-        <HomeContext value={{ user, redirectToLogin, showSnackbarMessage }}>
-          <SafeAreaProvider>
-            <SafeAreaView style={styles.safeArea}>
-              <View style={{ height: "100dvh" }}>
-                <NavigationContainer>
-                  <DrawerNavigator.Navigator
-                    initialRouteName="Home"
-                    drawerContent={(props) => (
-                      <CustomDrawerContent {...props} />
-                    )}
-                    screenOptions={{
-                      header: ({ navigation }) => (
-                        <Appbar.Header>
-                          <Appbar.Action
-                            icon={() => <FaBars />}
-                            onPress={() => navigation.toggleDrawer()}
-                          />
-                          <Appbar.Content title="Home Dashboard" />
-                          <Appbar.Action
-                            icon={() => <FaPowerOff />}
-                            onPress={logout}
-                          />
-                        </Appbar.Header>
-                      ),
-                    }}
+  if (isAuthenticated === true)
+    return (
+      <PaperProvider>
+        <IconContext.Provider
+          value={{
+            color: Appearance.getColorScheme() === "dark" ? "#fff" : "#000",
+            size: "1.5em",
+          }}
+        >
+          <HomeContext value={{ user, redirectToLogin, showSnackbarMessage }}>
+            <SafeAreaProvider>
+              <SafeAreaView style={styles.safeArea}>
+                <View style={{ height: "100dvh" }}>
+                  <NavigationContainer>
+                    <DrawerNavigator.Navigator
+                      initialRouteName="Home"
+                      drawerContent={(props) => (
+                        <CustomDrawerContent {...props} />
+                      )}
+                      screenOptions={{
+                        header: ({ navigation }) => (
+                          <Appbar.Header>
+                            <Appbar.Action
+                              icon={() => <FaBars />}
+                              onPress={() => navigation.toggleDrawer()}
+                            />
+                            <Appbar.Content title="Home Dashboard" />
+                            <Appbar.Action
+                              icon={() => <FaPowerOff />}
+                              onPress={logout}
+                            />
+                          </Appbar.Header>
+                        ),
+                      }}
+                    >
+                      <DrawerNavigator.Screen
+                        name="Home"
+                        component={HomeScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Tasks"
+                        component={TasksScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Shopping"
+                        component={ShoppingScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Recipes"
+                        component={RecipesScreen}
+                      />
+                    </DrawerNavigator.Navigator>
+                  </NavigationContainer>
+                  <Snackbar
+                    visible={isSnackbarVisible}
+                    onDismiss={() => setIsSnackbarVisible(false)}
+                    duration={3000}
+                    icon="close"
+                    onIconPress={() => setIsSnackbarVisible(false)}
+                    style={styles.snackbar[snackbarType]}
                   >
-                    <DrawerNavigator.Screen
-                      name="Home"
-                      component={HomeScreen}
-                    />
-                    <DrawerNavigator.Screen
-                      name="Tasks"
-                      component={TasksScreen}
-                    />
-                    <DrawerNavigator.Screen
-                      name="Shopping"
-                      component={ShoppingScreen}
-                    />
-                    <DrawerNavigator.Screen
-                      name="Recipes"
-                      component={RecipesScreen}
-                    />
-                  </DrawerNavigator.Navigator>
-                </NavigationContainer>
-                <Snackbar
-                  visible={isSnackbarVisible}
-                  onDismiss={() => setIsSnackbarVisible(false)}
-                  duration={3000}
-                  icon="close"
-                  onIconPress={() => setIsSnackbarVisible(false)}
-                  style={styles.snackbar[snackbarType]}
-                >
-                  {snackbarMessage}
-                </Snackbar>
-              </View>
-            </SafeAreaView>
-          </SafeAreaProvider>
-        </HomeContext>
-      </IconContext.Provider>
-    </PaperProvider>
-  );
+                    {snackbarMessage}
+                  </Snackbar>
+                </View>
+              </SafeAreaView>
+            </SafeAreaProvider>
+          </HomeContext>
+        </IconContext.Provider>
+      </PaperProvider>
+    );
+
+  return <LoadingScreen />;
 };
 
 const styles = StyleSheet.create({

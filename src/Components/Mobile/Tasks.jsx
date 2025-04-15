@@ -8,16 +8,17 @@ import {
   TextInput,
   HelperText,
 } from "react-native-paper";
-import { FaPlus } from "react-icons/fa";
 import dayjs from "dayjs";
 import { DatePickerInput } from "react-native-paper-dates";
 import { PaperSelect } from "react-native-paper-select";
 import { FlatList, View } from "react-native-web";
 import TaskRenderer from "./TaskRenderer";
 import { HomeContext } from "../../HomeContext";
+import { FaListCheck, FaListUl } from "react-icons/fa6";
 
 const Tasks = () => {
-  const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
+  const { user, redirectToLogin, showSnackbarMessage } =
+    useContext(HomeContext);
   const [tasks, setTasks] = useState([]);
   const [editTaskId, setEditTaskId] = useState(null);
   const [taskForm, setTaskForm] = useState({
@@ -31,11 +32,19 @@ const Tasks = () => {
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [errors, setErrors] = useState({});
 
+  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  const [taskFilter, setTaskFilter] = useState(null);
+  const [showTasksDone, setShowTasksDone] = useState();
+
   const fetchTasks = async () => {
-    const response = await fetch(`${import.meta.env.VITE_HOST}/tasks`, {
-      credentials:
-        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
-    });
+    const response = await fetch(
+      `${import.meta.env.VITE_HOST}/tasks${showTasksDone === true ? `?showDone=${showTasksDone}` : ""}`,
+      {
+        credentials:
+          import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+      }
+    );
     if (response.status === 401) {
       redirectToLogin();
       return;
@@ -86,6 +95,12 @@ const Tasks = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const closeDialog = () => {
+    setIsDialogVisible(false);
+    setTaskForm({ title: "", description: "", targetDate: "", owner: [] });
+    setEditTaskId(null);
+  };
+
   const handleSaveTask = async () => {
     if (!validateForm()) {
       return;
@@ -121,9 +136,7 @@ const Tasks = () => {
       return;
     }
 
-    setIsDialogVisible(false);
-    setTaskForm({ title: "", description: "", targetDate: "", owner: [] });
-    setEditTaskId(null);
+    closeDialog(setIsDialogVisible, setTaskForm, setEditTaskId);
     fetchTasks();
   };
 
@@ -180,13 +193,17 @@ const Tasks = () => {
   };
 
   const handleSnoozeTask = async (id, delay) => {
+    const currTask = tasks.find((task) => task._id === id);
+    if (!currTask) return;
     const response = await fetch(`${import.meta.env.VITE_HOST}/task/${id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        targetDate: dayjs().add(delay, "days").format("YYYY-MM-DD"),
+        targetDate: dayjs(currTask.targetDate)
+          .add(delay, "days")
+          .format("YYYY-MM-DD"),
       }),
       credentials:
         import.meta.env.VITE_ENV === "production" ? "include" : undefined,
@@ -210,6 +227,26 @@ const Tasks = () => {
   };
 
   useEffect(() => {
+    if (editTaskId) {
+      const taskToEdit = tasks.find((task) => task._id === editTaskId);
+      if (taskToEdit) {
+        setTaskForm({
+          title: taskToEdit.title,
+          description: taskToEdit.description,
+          targetDate: dayjs(taskToEdit.targetDate).toDate(),
+          owner: taskToEdit.owner?.map((ownerId) =>
+            ownerOptions.find((option) => option._id === ownerId)
+          ),
+        });
+      }
+    }
+  }, [editTaskId]);
+
+  useEffect(() => {
+    if (showTasksDone == true || showTasksDone === false) fetchTasks();
+  }, [showTasksDone]);
+
+  useEffect(() => {
     fetchTasks();
     fetchOwnerOptions();
   }, []);
@@ -217,7 +254,7 @@ const Tasks = () => {
   return (
     <View style={styles.container}>
       <FlatList
-        data={tasks}
+        data={tasks.filter(taskFilter ?? Boolean)}
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <TaskRenderer
@@ -236,20 +273,47 @@ const Tasks = () => {
         )}
       />
       {/* Floating Action Button */}
-      <FAB
-        style={styles.fab}
-        icon={() => <FaPlus />}
-        onPress={() => {
-          setEditTaskId(null);
-          setTaskForm({
-            title: "",
-            description: "",
-            targetDate: "",
-            owner: [],
-          });
-          setErrors({});
-          setIsDialogVisible(true);
-        }}
+      {/* Floating Action Button Group */}
+      <FAB.Group
+        open={isFabOpen}
+        icon={isFabOpen ? "close" : "menu"}
+        actions={[
+          {
+            icon: showTasksDone
+              ? "clipboard-alert-outline"
+              : "clipboard-check-outline",
+            label: showTasksDone ? "Hide done" : "Show done",
+            onPress: () => setShowTasksDone((prev) => !prev),
+          },
+          {
+            icon: taskFilter ? "filter-off" : "filter",
+            label: taskFilter ? "All Tasks" : "My Tasks",
+            onPress: () => {
+              if (taskFilter) {
+                setTaskFilter(null);
+                return;
+              }
+              const userId = user?._id; // Example: Filter by the first user
+              setTaskFilter(() => (task) => task.owner.includes(userId));
+            },
+          },
+          {
+            icon: "plus",
+            label: "New Task",
+            onPress: () => {
+              setEditTaskId(null);
+              setTaskForm({
+                title: "",
+                description: "",
+                targetDate: "",
+                owner: [],
+              });
+              setErrors({});
+              setIsDialogVisible(true);
+            },
+          },
+        ]}
+        onStateChange={({ open }) => setIsFabOpen(open)}
       />
 
       {/* Task Dialog */}
@@ -329,7 +393,7 @@ const Tasks = () => {
             </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setIsDialogVisible(false)}>Cancel</Button>
+            <Button onPress={closeDialog}>Cancel</Button>
             <Button onPress={handleSaveTask}>Save</Button>
           </Dialog.Actions>
         </Dialog>

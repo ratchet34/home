@@ -33,6 +33,7 @@ const TaskRenderer = ({
         <IconButton
           icon={() => <FaTrash />}
           onPress={() => handleDeleteTask(task._id)}
+          mode="contained-tonal"
         />
         <IconButton
           icon={() => <FaEdit />}
@@ -46,14 +47,17 @@ const TaskRenderer = ({
             });
             setIsDialogVisible(true);
           }}
+          mode="contained"
         />
         <IconButton
           icon={() => <FaClock />}
           onPress={() => handleSnoozeTask(task._id, 1)}
+          mode="contained"
         />
         <IconButton
           icon={() => <FaCheck />}
           onPress={() => handleMarkAsDone(task._id)}
+          mode="contained"
         />
       </Card.Actions>
     </Card>
