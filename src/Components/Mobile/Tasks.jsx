@@ -14,7 +14,6 @@ import { PaperSelect } from "react-native-paper-select";
 import { FlatList, View } from "react-native-web";
 import TaskRenderer from "./TaskRenderer";
 import { HomeContext } from "../../HomeContext";
-import { FaListCheck, FaListUl } from "react-icons/fa6";
 
 const Tasks = () => {
   const { user, redirectToLogin, showSnackbarMessage } =

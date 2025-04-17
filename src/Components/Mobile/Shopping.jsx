@@ -181,9 +181,16 @@ const Shopping = () => {
 
   const handleSelectLocation = (item) => {
     if (item) {
+      if (itemForm.location?.includes(item._id)) {
+        setItemForm((prev) => ({
+          ...prev,
+          location: prev.location.filter((loc) => loc !== item._id),
+        }));
+        return;
+      }
       setItemForm((prev) => ({
         ...prev,
-        location: [...(prev.location ?? []), item._id],
+        location: [...new Set([...(prev.location ?? []), item._id])],
       }));
     } else {
       setItemForm((prev) => ({

@@ -1,8 +1,7 @@
 import React, { useRef, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { TextInput, IconButton, Menu, Text } from "react-native-paper";
+import { TextInput, IconButton, Menu } from "react-native-paper";
 import PropTypes from "prop-types";
-import { FaCheck } from "react-icons/fa6";
 
 const MultiSelectDropdown = ({
   loading = false,
@@ -14,11 +13,9 @@ const MultiSelectDropdown = ({
   const [inputValue, setInputValue] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const openMenu = (e) => {
-    setMenuVisible(true);
+  const openMenu = () => {
+    setTimeout(() => setMenuVisible(true), 200);
     inputRef.current?.focus();
-    e.preventDefault();
-    e.stopPropagation();
   };
   const closeMenu = () => setMenuVisible(false);
 
@@ -67,17 +64,20 @@ const MultiSelectDropdown = ({
     selectedMenuItem: {
       flexGrow: 1,
     },
-    menu: {
-      // position: "relative",
-      // top: 56,
-    },
   });
 
   return (
     <View style={styles.container} ref={globalRef}>
       <TextInput
         value={inputValue}
-        onChangeText={setInputValue}
+        onChangeText={(str) => {
+          setInputValue(str);
+          if (str.length > 0) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        }}
         style={styles.input}
         placeholder={
           value.length > 0
@@ -136,7 +136,10 @@ const MultiSelectDropdown = ({
             .map((option, index) => (
               <Menu.Item
                 key={index}
-                onPress={() => handleSelect(option)}
+                onPress={() => {
+                  handleSelect(option);
+                  setInputValue("");
+                }}
                 trailingIcon={value.includes(option?._id) ? "check" : null}
                 title={option?.title}
                 contentStyle={styles.selectedMenuItem}

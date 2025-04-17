@@ -12,11 +12,9 @@ const InputDropdown = ({
   const [inputValue, setInputValue] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
 
-  const openMenu = (e) => {
-    setMenuVisible(true);
+  const openMenu = () => {
+    setTimeout(() => setMenuVisible(true), 200);
     inputRef.current?.focus();
-    e.preventDefault();
-    e.stopPropagation();
   };
   const closeMenu = () => setMenuVisible(false);
 
@@ -62,17 +60,20 @@ const InputDropdown = ({
       maxHeight: 200,
       overflow: "auto",
     },
-    menu: {
-      // position: "relative",
-      // top: 56,
-    },
   });
 
   return (
     <View style={styles.container} ref={globalRef}>
       <TextInput
         value={inputValue}
-        onChangeText={setInputValue}
+        onChangeText={(str) => {
+          setInputValue(str);
+          if (str.length > 0) {
+            openMenu();
+          } else {
+            closeMenu();
+          }
+        }}
         style={styles.input}
         placeholder="Select an option"
         onFocus={openMenu}
