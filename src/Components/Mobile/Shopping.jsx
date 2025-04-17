@@ -7,16 +7,14 @@ import {
   Portal,
   TextInput,
   HelperText,
-  IconButton,
+  Menu,
 } from "react-native-paper";
-import { FaPlus } from "react-icons/fa";
+import { FaBalanceScale, FaPlus } from "react-icons/fa";
 import { FlatList } from "react-native-web";
 import { HomeContext } from "../../HomeContext";
 import ShoppingRenderer from "./ShoppingRenderer";
-import {
-  AutocompleteDropdown,
-  AutocompleteDropdownContextProvider,
-} from "react-native-autocomplete-dropdown";
+import InputDropdown from "./InputDropdown";
+import MultiSelectDropdown from "./MultiSelectDropdown";
 
 const Shopping = () => {
   const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
@@ -31,6 +29,11 @@ const Shopping = () => {
   });
   const [isDialogVisible, setIsDialogVisible] = useState(false);
   const [errors, setErrors] = useState({});
+
+  const [isAddingItem, setIsAddingItem] = useState(false);
+  const [isAddingLocation, setIsAddingLocation] = useState(false);
+
+  const [unitMenuVisible, setUnitMenuVisible] = useState(false);
 
   const fetchShoppingItems = async () => {
     const response = await fetch(
@@ -75,9 +78,7 @@ const Shopping = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            item: {
-              title: ingr,
-            },
+            title: ingr,
           }),
           credentials:
             import.meta.env.VITE_ENV === "production" ? "include" : undefined,
@@ -97,13 +98,27 @@ const Shopping = () => {
       }
       setItemForm((prev) => ({
         ...prev,
-        ingredient: data._id,
+        ingredient: data.insertedId,
       }));
-      await getIngredientDictionary();
+      await fetchIngredientOptions();
     } catch (error) {
       console.error("Error adding ingredient:", error);
     } finally {
       setIsAddingItem(false); // Stop loading
+    }
+  };
+
+  const handleSelectItem = (item) => {
+    if (item) {
+      setItemForm((prev) => ({
+        ...prev,
+        ingredient: item._id,
+      }));
+    } else {
+      setItemForm((prev) => ({
+        ...prev,
+        ingredient: null,
+      }));
     }
   };
 
@@ -134,9 +149,7 @@ const Shopping = () => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            item: {
-              title: loc,
-            },
+            title: loc,
           }),
           credentials:
             import.meta.env.VITE_ENV === "production" ? "include" : undefined,
@@ -156,13 +169,27 @@ const Shopping = () => {
       }
       setItemForm((prev) => ({
         ...prev,
-        location: data._id,
+        location: [...(prev.location ?? []), data.insertedId],
       }));
-      await getLocationDictionary();
+      await fetchLocationOptions();
     } catch (error) {
       console.error("Error adding location:", error);
     } finally {
       setIsAddingLocation(false); // Stop loading
+    }
+  };
+
+  const handleSelectLocation = (item) => {
+    if (item) {
+      setItemForm((prev) => ({
+        ...prev,
+        location: [...(prev.location ?? []), item._id],
+      }));
+    } else {
+      setItemForm((prev) => ({
+        ...prev,
+        location: [],
+      }));
     }
   };
 
@@ -283,96 +310,79 @@ const Shopping = () => {
           visible={isDialogVisible}
           onDismiss={() => setIsDialogVisible(false)}
         >
-          <AutocompleteDropdownContextProvider>
-            <Dialog.Title>{editItemId ? "Edit Item" : "New Item"}</Dialog.Title>
-            <Dialog.Content>
-              <View style={styles.input}>
-                <AutocompleteDropdown
-                  clearOnFocus={false}
-                  closeOnSubmit={true}
-                  deboyunce={600}
-                  useFilter={false}
-                  initialValue={itemForm?.ingredient ?? ""}
-                  dataSet={ingredientOptions}
-                  onSelectItem={(item) =>
-                    setItemForm({ ...itemForm, ingredient: item?.id || null })
-                  }
-                  InputComponent={TextInput}
-                  textInputProps={{
-                    label: "Item",
-                  }}
-                  rightButtonsContainerStyle={{
-                    justifyContent: "flex-end",
-                    alignItems: "end",
-                  }}
-                  inputContainerStyle={{
-                    height: 56,
-                  }}
-                />
-                {errors.ingredient && (
-                  <HelperText type="error">{errors.ingredient}</HelperText>
-                )}
-              </View>
-
-              <TextInput
-                label="Quantity"
-                value={itemForm.quantity}
-                onChangeText={(text) =>
-                  setItemForm({ ...itemForm, quantity: text })
-                }
-                style={styles.input}
-                keyboardType="numeric"
-                error={!!errors.quantity}
-                dense={true}
+          <Dialog.Title>{editItemId ? "Edit Item" : "New Item"}</Dialog.Title>
+          <Dialog.Content>
+            <View style={styles.input}>
+              <InputDropdown
+                loading={isAddingItem}
+                options={ingredientOptions}
+                onSelect={handleSelectItem}
+                onAddItem={addIngredient}
               />
-              {errors.quantity && (
-                <HelperText type="error">{errors.quantity}</HelperText>
+              {errors.ingredient && (
+                <HelperText type="error">{errors.ingredient}</HelperText>
               )}
-              <View style={styles.autocompleteWrapper}>
-                <View style={styles.input}>
-                  <AutocompleteDropdown
-                    clearOnFocus={false}
-                    closeOnSubmit={false}
-                    deboyunce={600}
-                    useFilter={false}
-                    initialValue={itemForm?.location ?? ""}
-                    dataSet={locationOptions.map((loc) => ({
-                      id: loc._id,
-                      title: loc.title,
-                    }))}
-                    onSelectItem={(item) =>
-                      setItemForm((prev) => ({
-                        ...prev,
-                        location: item?.id,
-                      }))
-                    }
-                    InputComponent={TextInput}
-                    textInputProps={{
-                      label: "Location",
-                    }}
-                    rightButtonsContainerStyle={{
-                      justifyContent: "flex-end",
-                      alignItems: "end",
-                    }}
-                    inputContainerStyle={{
-                      height: 56,
-                    }}
-                  />
-                </View>
-                <IconButton
-                  icon="plus"
-                  mode="contained-tonal"
-                  onPress={() => {
-                    addLocation(itemForm.location);
-                  }}
+            </View>
+            <View style={styles.input}>
+              <View style={styles.quantity}>
+                <TextInput
+                  label="Quantity"
+                  value={itemForm.quantity}
+                  onChangeText={(text) =>
+                    setItemForm({ ...itemForm, quantity: text })
+                  }
+                  keyboardType="numeric"
+                  error={!!errors.quantity}
+                  style={{ flex: 1 }}
+                  dense={true}
                 />
+                {errors.quantity && (
+                  <HelperText type="error">{errors.quantity}</HelperText>
+                )}
+                <Menu
+                  visible={unitMenuVisible}
+                  onDismiss={() => setUnitMenuVisible(false)}
+                  anchor={
+                    <Button
+                      mode="contained-tonal"
+                      onPress={() => setUnitMenuVisible((prev) => !prev)}
+                    >
+                      {itemForm.unit || <FaBalanceScale />}
+                    </Button>
+                  }
+                >
+                  {[<FaBalanceScale key="none" />, "kg", "g", "l", "ml"].map(
+                    (unit) => (
+                      <Menu.Item
+                        key={unit}
+                        onPress={() => {
+                          setItemForm((prev) => ({
+                            ...prev,
+                            unit,
+                          }));
+                          setUnitMenuVisible(false);
+                        }}
+                        title={unit}
+                      />
+                    )
+                  )}
+                </Menu>
               </View>
-            </Dialog.Content>
-            <Dialog.Actions>
-              <Button onPress={() => setIsDialogVisible(false)}>Cancel</Button>
-              <Button onPress={handleSaveItem}>Save</Button>
-            </Dialog.Actions>
-          </AutocompleteDropdownContextProvider>
+            </View>
+            <View style={styles.input}>
+              <MultiSelectDropdown
+                loading={isAddingLocation}
+                options={locationOptions}
+                onSelect={handleSelectLocation}
+                onAddItem={addLocation}
+                value={itemForm.location}
+              />
+            </View>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button onPress={() => setIsDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleSaveItem}>Save</Button>
+          </Dialog.Actions>
         </Dialog>
       </Portal>
     </View>
@@ -396,11 +406,11 @@ const styles = StyleSheet.create({
     height: 56,
     flexShrink: 1,
   },
-  autocompleteWrapper: {
-    width: "100%",
+  quantity: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    gap: ".5em",
   },
 });
 

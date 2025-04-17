@@ -56,13 +56,6 @@ const Login = ({ onLoggedIn }) => {
             style={styles.input}
             mode="outlined"
           />
-          <View style={styles.checkboxContainer}>
-            <Checkbox
-              status={remember ? "checked" : "unchecked"}
-              onPress={() => setRemember(!remember)}
-            />
-            <Text style={styles.checkboxLabel}>Remember me</Text>
-          </View>
           <Button
             mode="contained"
             onPress={handleLogin}
