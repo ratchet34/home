@@ -8,13 +8,15 @@ import {
   TextInput,
   HelperText,
   Menu,
+  List,
 } from "react-native-paper";
-import { FaBalanceScale, FaPlus } from "react-icons/fa";
+import { FaBalanceScale } from "react-icons/fa";
 import { FlatList } from "react-native-web";
 import { HomeContext } from "../../HomeContext";
 import ShoppingRenderer from "./ShoppingRenderer";
 import InputDropdown from "./InputDropdown";
 import MultiSelectDropdown from "./MultiSelectDropdown";
+import { MdFilterList, MdFilterListOff } from "react-icons/md";
 
 const Shopping = () => {
   const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
@@ -34,6 +36,9 @@ const Shopping = () => {
   const [isAddingLocation, setIsAddingLocation] = useState(false);
 
   const [unitMenuVisible, setUnitMenuVisible] = useState(false);
+
+  const [isFabOpen, setIsFabOpen] = useState(false);
+  const [sortByLocation, setSortByLocation] = useState(false);
 
   const fetchShoppingItems = async () => {
     const response = await fetch(
@@ -282,33 +287,95 @@ const Shopping = () => {
     fetchLocationOptions();
   }, []);
 
+  const allLocations = shoppingItems.reduce((acc, item) => {
+    if (item.location) {
+      item.location.forEach((locId) => {
+        if (!acc.includes(locId)) {
+          acc.push(locId);
+        }
+      });
+    }
+    return acc;
+  }, []);
+
   return (
     <View style={styles.container}>
-      <FlatList
-        data={shoppingItems}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) => (
-          <ShoppingRenderer
-            item={item}
-            ingredientOptions={ingredientOptions}
-            locationOptions={locationOptions}
-            setEditItemId={setEditItemId}
-            setItemForm={setItemForm}
-            setIsDialogVisible={setIsDialogVisible}
-            handleDeleteItem={handleDeleteItem}
-          />
-        )}
-      />
+      {sortByLocation ? (
+        allLocations.map((locationId) => (
+          <List.Accordion
+            key={locationId}
+            title={
+              locationOptions.find((loc) => loc._id === locationId)?.title ||
+              "Unknown"
+            }
+          >
+            <FlatList
+              data={shoppingItems.filter((item) =>
+                item.location?.includes(locationId)
+              )}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <ShoppingRenderer
+                  item={item}
+                  ingredientOptions={ingredientOptions}
+                  locationOptions={locationOptions}
+                  setEditItemId={setEditItemId}
+                  setItemForm={setItemForm}
+                  setIsDialogVisible={setIsDialogVisible}
+                  handleDeleteItem={handleDeleteItem}
+                />
+              )}
+            />
+          </List.Accordion>
+        ))
+      ) : (
+        <FlatList
+          data={shoppingItems}
+          keyExtractor={(item) => item._id}
+          renderItem={({ item }) => (
+            <ShoppingRenderer
+              item={item}
+              ingredientOptions={ingredientOptions}
+              locationOptions={locationOptions}
+              setEditItemId={setEditItemId}
+              setItemForm={setItemForm}
+              setIsDialogVisible={setIsDialogVisible}
+              handleDeleteItem={handleDeleteItem}
+            />
+          )}
+        />
+      )}
       {/* Floating Action Button */}
-      <FAB
-        style={styles.fab}
-        icon={() => <FaPlus />}
-        onPress={() => {
-          setEditItemId(null);
-          setItemForm({ ingredient: null, quantity: "", location: [] });
-          setErrors({});
-          setIsDialogVisible(true);
-        }}
+      {/* Floating Action Button Group */}
+      <FAB.Group
+        open={isFabOpen}
+        icon={isFabOpen ? "close" : "menu"}
+        actions={[
+          {
+            icon: sortByLocation
+              ? () => <MdFilterListOff size={22} />
+              : () => <MdFilterList size={22} />,
+            label: sortByLocation ? "Clear grouping" : "Group by location",
+            onPress: () => {
+              setSortByLocation((prev) => !prev);
+            },
+          },
+          {
+            icon: "plus",
+            label: "New Item",
+            onPress: () => {
+              setEditItemId(null);
+              setItemForm({
+                ingredient: null,
+                quantity: 1,
+                location: [],
+              });
+              setErrors({});
+              setIsDialogVisible(true);
+            },
+          },
+        ]}
+        onStateChange={({ open }) => setIsFabOpen(open)}
       />
 
       {/* Item Dialog */}
