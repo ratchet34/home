@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import { View, StyleSheet } from "react-native";
-import { TextInput, Button, Checkbox, Text, Card } from "react-native-paper";
+import { TextInput, Button, Card } from "react-native-paper";
 
 const Login = ({ onLoggedIn }) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {

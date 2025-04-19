@@ -9,12 +9,13 @@ const MultiSelectDropdown = ({
   onSelect = () => {},
   onAddItem = () => {},
   value = [],
+  closeMenuOnSelect = true,
 }) => {
   const [inputValue, setInputValue] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
 
   const openMenu = () => {
-    setTimeout(() => setMenuVisible(true), 200);
+    setTimeout(() => setMenuVisible(true), 100);
     inputRef.current?.focus();
   };
   const closeMenu = () => setMenuVisible(false);
@@ -25,7 +26,7 @@ const MultiSelectDropdown = ({
   const handleSelect = (option) => {
     onSelect(option);
     setInputValue(option?.title);
-    closeMenu();
+    if (closeMenuOnSelect === true) closeMenu();
   };
 
   const handleAddItem = (value) => {
@@ -62,6 +63,10 @@ const MultiSelectDropdown = ({
       overflow: "auto",
     },
     selectedMenuItem: {
+      backgroundColor: "#D1C4E9",
+      fontWeight: "bold",
+    },
+    menuItem: {
       flexGrow: 1,
     },
   });
@@ -133,19 +138,23 @@ const MultiSelectDropdown = ({
             .sort((a, b) => {
               return a?.title?.localeCompare(b?.title);
             })
-            .map((option, index) => (
-              <Menu.Item
-                key={index}
-                onPress={() => {
-                  handleSelect(option);
-                  setInputValue("");
-                }}
-                trailingIcon={value.includes(option?._id) ? "check" : null}
-                title={option?.title}
-                contentStyle={styles.selectedMenuItem}
-                dense={true}
-              />
-            ))}
+            .map((option, index) => {
+              const isSelected = value.includes(option?._id);
+              return (
+                <Menu.Item
+                  key={index}
+                  onPress={() => {
+                    handleSelect(option);
+                    setInputValue("");
+                  }}
+                  trailingIcon={isSelected ? "check" : null}
+                  title={isSelected ? <b>{option?.title}</b> : option?.title}
+                  contentStyle={styles.menuItem}
+                  style={isSelected ? styles.selectedMenuItem : null}
+                  dense={true}
+                />
+              );
+            })}
         </Menu>
       </View>
     </View>
@@ -161,6 +170,7 @@ MultiSelectDropdown.propTypes = {
   onSelect: PropTypes.func,
   onAddItem: PropTypes.func,
   value: PropTypes.array,
+  closeMenuOnSelect: PropTypes.bool,
 };
 
 export default MultiSelectDropdown;

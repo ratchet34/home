@@ -9,6 +9,8 @@ import {
   HelperText,
   Menu,
   List,
+  ActivityIndicator,
+  Text,
 } from "react-native-paper";
 import { FaBalanceScale } from "react-icons/fa";
 import { FlatList } from "react-native-web";
@@ -26,7 +28,7 @@ const Shopping = () => {
   const [editItemId, setEditItemId] = useState(null);
   const [itemForm, setItemForm] = useState({
     ingredient: "",
-    quantity: "",
+    quantity: 1,
     location: "",
   });
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -40,7 +42,10 @@ const Shopping = () => {
   const [isFabOpen, setIsFabOpen] = useState(false);
   const [sortByLocation, setSortByLocation] = useState(false);
 
+  const [shoppingItemsLoading, setShoppingItemsLoading] = useState(false);
+
   const fetchShoppingItems = async () => {
+    setShoppingItemsLoading(true);
     const response = await fetch(
       `${import.meta.env.VITE_HOST}/shopping/items`,
       {
@@ -54,6 +59,7 @@ const Shopping = () => {
     }
     const data = await response.json();
     setShoppingItems(data);
+    setShoppingItemsLoading(false);
   };
 
   const fetchIngredientOptions = async () => {
@@ -297,6 +303,15 @@ const Shopping = () => {
     }
     return acc;
   }, []);
+
+  if (shoppingItemsLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator animating={true} size="large" />
+        <Text>Loading tasks...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

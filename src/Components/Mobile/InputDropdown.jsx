@@ -13,7 +13,7 @@ const InputDropdown = ({
   const [menuVisible, setMenuVisible] = useState(false);
 
   const openMenu = () => {
-    setTimeout(() => setMenuVisible(true), 200);
+    setTimeout(() => setMenuVisible(true), 100);
     inputRef.current?.focus();
   };
   const closeMenu = () => setMenuVisible(false);

@@ -26,7 +26,7 @@ const TaskRenderer = ({
           <Chip icon={() => <FaCalendarAlt />}>
             {dayjs(task.targetDate).format("D MMMM, YYYY")}
           </Chip>
-          <Chip icon={() => <FaUser />}>{owners.join(", ")}</Chip>
+          <Chip icon={() => <FaUser />}>{owners?.join(", ")}</Chip>
         </View>
       </Card.Content>
       <Card.Actions style={styles.actions} id="task-actions">

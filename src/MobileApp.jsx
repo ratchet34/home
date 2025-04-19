@@ -1,12 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Appearance, Platform } from "react-native";
-import {
-  Appbar,
-  Drawer,
-  PaperProvider,
-  Snackbar,
-  Text,
-} from "react-native-paper";
+import { View, StyleSheet, Appearance } from "react-native";
+import { Appbar, Drawer, PaperProvider, Snackbar } from "react-native-paper";
 import PropTypes from "prop-types";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -21,10 +15,12 @@ import Shopping from "./Components/Mobile/Shopping";
 import useNotifications from "./Components/Mobile/useNotifications";
 import "./css/mobile/app.css";
 import LoadingScreen from "./Components/Mobile/LoadingScreen";
+import Home from "./Components/Mobile/Home";
+import Recipes from "./Components/Mobile/Recipes";
 
 const HomeScreen = () => (
   <View style={styles.content}>
-    <Text>Welcome to the Home Screen!</Text>
+    <Home />
   </View>
 );
 
@@ -42,7 +38,7 @@ const ShoppingScreen = () => (
 
 const RecipesScreen = () => (
   <View style={styles.content}>
-    <Text>Find your favorite recipes here.</Text>
+    <Recipes />
   </View>
 );
 
