@@ -18,9 +18,10 @@ import { HomeContext } from "../../HomeContext";
 import ShoppingRenderer from "./ShoppingRenderer";
 import InputDropdown from "./InputDropdown";
 import MultiSelectDropdown from "./MultiSelectDropdown";
-import { MdFilterList, MdFilterListOff } from "react-icons/md";
+import { useIsFocused } from "@react-navigation/native";
 
 const Shopping = () => {
+  const isFocused = useIsFocused();
   const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
   const [shoppingItems, setShoppingItems] = useState([]);
   const [ingredientOptions, setIngredientOptions] = useState([]);
@@ -288,10 +289,11 @@ const Shopping = () => {
   };
 
   useEffect(() => {
+    if (!isFocused) return;
     fetchShoppingItems();
     fetchIngredientOptions();
     fetchLocationOptions();
-  }, []);
+  }, [isFocused]);
 
   const allLocations = shoppingItems.reduce((acc, item) => {
     if (item.location) {
@@ -314,7 +316,7 @@ const Shopping = () => {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={styles.container} bounces={false}>
       {sortByLocation ? (
         allLocations.map((locationId) => (
           <List.Accordion
@@ -350,6 +352,7 @@ const Shopping = () => {
           renderItem={({ item }) => (
             <ShoppingRenderer
               item={item}
+              key={item._id}
               ingredientOptions={ingredientOptions}
               locationOptions={locationOptions}
               setEditItemId={setEditItemId}
@@ -367,9 +370,7 @@ const Shopping = () => {
         icon={isFabOpen ? "close" : "menu"}
         actions={[
           {
-            icon: sortByLocation
-              ? () => <MdFilterListOff size={22} />
-              : () => <MdFilterList size={22} />,
+            icon: sortByLocation ? "close" : "format-list-group",
             label: sortByLocation ? "Clear grouping" : "Group by location",
             onPress: () => {
               setSortByLocation((prev) => !prev);

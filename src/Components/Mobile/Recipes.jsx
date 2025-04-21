@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import {
   Button,
@@ -6,20 +6,27 @@ import {
   Portal,
   TextInput,
   HelperText,
-  Card,
-  Chip,
   ActivityIndicator,
   Text,
+  Menu,
+  Searchbar,
+  FAB,
 } from "react-native-paper";
+import { FlatList } from "react-native-web";
+import { FaBalanceScale } from "react-icons/fa";
 import { HomeContext } from "../../HomeContext";
-import MultiSelectDropdown from "./MultiSelectDropdown";
+import InputDropdown from "./InputDropdown";
+import RecipeRenderer from "./RecipeRenderer";
+import { useIsFocused } from "@react-navigation/native";
 
 const Recipes = () => {
+  const isFocused = useIsFocused();
   const { redirectToLogin, showSnackbarMessage } = useContext(HomeContext);
   const [recipes, setRecipes] = useState([]);
+  const [editRecipeId, setEditRecipeId] = useState(null);
   const [ingredients, setIngredients] = useState([]);
   const [recipeForm, setRecipeForm] = useState({
-    name: "",
+    title: "",
     ingredients: [],
   });
   const [isDialogVisible, setIsDialogVisible] = useState(false);
@@ -29,6 +36,14 @@ const Recipes = () => {
   const [ingredientsLoading, setIngredientsLoading] = useState(true);
 
   const [isAddingItem, setIsAddingItem] = useState(false);
+
+  const [unitMenuVisible, setUnitMenuVisible] = useState(false);
+
+  const [recipeFilter, setRecipeFilter] = useState("");
+
+  const [isFabOpen, setIsFabOpen] = useState(false);
+
+  const inputRef = useRef(null);
 
   const fetchRecipes = async () => {
     try {
@@ -79,8 +94,8 @@ const Recipes = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!recipeForm.name.trim()) {
-      newErrors.name = "Recipe name is required.";
+    if (!recipeForm.title.trim()) {
+      newErrors.title = "Recipe title is required.";
     }
     if (recipeForm.ingredients.length < 1) {
       newErrors.ingredients = "At least one ingredient is required.";
@@ -130,106 +145,334 @@ const Recipes = () => {
     }
   };
 
-  const handleSelectIngredient = (ingredient) => {
-    setRecipeForm((prev) => {
-      const isSelected = prev.ingredients.some(
-        (item) => item === ingredient._id
-      );
-      if (isSelected) {
-        return {
-          ...prev,
-          ingredients: prev.ingredients.filter(
-            (item) => item !== ingredient._id
-          ),
-        };
-      } else {
-        return {
-          ...prev,
-          ingredients: [...new Set([...prev.ingredients, ingredient._id])],
-        };
-      }
-    });
+  const handleAddIngredientToRecipe = () => {
+    if (recipeForm.quantity && recipeForm.ingredient) {
+      setRecipeForm((prev) => ({
+        ...prev,
+        ingredients: [
+          ...(prev?.ingredients ?? []),
+          {
+            _id: recipeForm.ingredient,
+            quantity: recipeForm.quantity,
+            unit: recipeForm.unit,
+          },
+        ],
+      }));
+      setRecipeForm((prev) => ({ ...prev, quantity: 1 }));
+      inputRef.current.clearInput();
+    }
   };
 
-  const handleSaveRecipe = () => {
+  const getRecipeLabel = () => {
+    if (recipeForm?.ingredients?.length > 0) {
+      if (recipeForm.ingredients.length === 1) {
+        return "Recipe Name (1 ingredient)";
+      } else if (recipeForm.ingredients.length > 1) {
+        return `Recipe Name (${recipeForm.ingredients.length} ingredients)`;
+      }
+    }
+    return "Recipe Name";
+  };
+
+  const handleSaveRecipe = async () => {
     if (!validateForm()) {
       return;
     }
 
-    setRecipeForm({ name: "", ingredients: [] });
+    const recipeData = {
+      title: recipeForm.title,
+      ingredients: recipeForm.ingredients,
+    };
+
+    const method = editRecipeId ? "PATCH" : "PUT";
+    const url = editRecipeId
+      ? `${import.meta.env.VITE_HOST}/recipe/${editRecipeId}`
+      : `${import.meta.env.VITE_HOST}/recipe/`;
+
+    const response = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(recipeData),
+      credentials:
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+    });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error saving recipe. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Recipe saved successfully.",
+      type: "success",
+    });
+    setEditRecipeId(null);
+    setRecipeForm({ title: "", quantity: 1, unit: undefined, ingredients: [] });
+    handleCloseDialog();
+    fetchRecipes(); // Refresh the recipe list
+  };
+
+  const handleCloseDialog = () => {
+    setEditRecipeId(null);
     setIsDialogVisible(false);
+    setRecipeForm({ title: "", quantity: 1, unit: undefined, ingredients: [] });
+    setErrors({});
+  };
+
+  const handleDeleteRecipe = async (id) => {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/recipe/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials:
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+    });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+    if (!response.ok) {
+      showSnackbarMessage({
+        message: "Error deleting recipe. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Recipe deleted successfully.",
+      type: "success",
+    });
+    fetchRecipes(); // Refresh the recipe list
+  };
+
+  const handleAddShoppingItem = async (item) => {
+    const response = await fetch(`${import.meta.env.VITE_HOST}/shopping/item`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+      credentials:
+        import.meta.env.VITE_ENV === "production" ? "include" : undefined,
+    });
+    if (response.status === 401) {
+      redirectToLogin();
+      return;
+    }
+  };
+
+  const handleAddRecipeToShoppingList = async (ingrs) => {
+    const ingredients = ingrs.map((ingredient) => ({
+      ingredient: ingredient._id,
+      quantity: ingredient.quantity,
+      unit: ingredient.unit,
+    }));
+    const responses = await Promise.all(
+      ingredients.map((ingredient) => {
+        return handleAddShoppingItem(ingredient);
+      })
+    );
+    if (responses.some((response) => response.status === 401)) {
+      redirectToLogin();
+      return;
+    }
+    if (responses.some((response) => !response.ok)) {
+      showSnackbarMessage({
+        message: "Error adding recipe to shopping list. Please try again.",
+        type: "error",
+      });
+      return;
+    }
+    showSnackbarMessage({
+      message: "Recipe added to shopping list.",
+      type: "success",
+    });
   };
 
   useEffect(() => {
+    if (editRecipeId) {
+      const selectedRecipe = recipes.find(
+        (recipe) => recipe._id === editRecipeId
+      );
+      if (selectedRecipe) {
+        setRecipeForm({
+          title: selectedRecipe.title,
+          ingredients: selectedRecipe.ingredients,
+          quantity: 1,
+          unit: undefined,
+        });
+        setIsDialogVisible(true);
+      }
+    } else {
+      setRecipeForm({
+        title: "",
+        quantity: 1,
+        unit: undefined,
+        ingredients: [],
+      });
+    }
+  }, [editRecipeId]);
+
+  useEffect(() => {
+    if (!isFocused) return;
     fetchRecipes();
     fetchIngredients();
-  }, []);
+  }, [isFocused]);
 
   if (recipesLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator animating={true} size="large" />
-        <Text>Loading tasks...</Text>
+        <Text>Loading recipes...</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {recipes.map((recipe, index) => (
-        <Card key={index} style={styles.card}>
-          <Card.Title title={recipe.name} />
-          <Card.Content>
-            {recipe.ingredients.map((ingredient, idx) => (
-              <Chip key={idx} style={styles.chip}>
-                {ingredient.name}
-                {ingredient.quantity ? ` - ${ingredient.quantity}` : ""}
-              </Chip>
-            ))}
-          </Card.Content>
-        </Card>
-      ))}
-
-      <Button
-        mode="contained"
-        onPress={() => setIsDialogVisible(true)}
-        style={styles.addButton}
-      >
-        Add Recipe
-      </Button>
+      <Searchbar
+        placeholder="Search recipes"
+        onChangeText={(query) => setRecipeFilter(query)}
+        value={recipeFilter}
+      />
+      <FlatList
+        data={recipes.filter((recipe) =>
+          recipe.title.toLowerCase().includes(recipeFilter.toLowerCase())
+        )}
+        keyExtractor={(item) => item._id}
+        renderItem={({ item }) => (
+          <RecipeRenderer
+            recipe={item}
+            ingredientOptions={ingredients}
+            handleEditRecipe={setEditRecipeId}
+            handleAddToShoppingList={handleAddRecipeToShoppingList}
+            handleDeleteRecipe={handleDeleteRecipe}
+          />
+        )}
+      />
+      <FAB.Group
+        open={isFabOpen}
+        icon={isFabOpen ? "close" : "menu"}
+        actions={[
+          {
+            icon: "plus",
+            label: "New Recipe",
+            onPress: () => {
+              setEditRecipeId(null);
+              setRecipeForm({
+                title: "",
+                quantity: 1,
+                unit: undefined,
+                ingredients: [],
+              });
+              setErrors({});
+              setIsDialogVisible(true);
+            },
+          },
+        ]}
+        onStateChange={({ open }) => setIsFabOpen(open)}
+      />
 
       <Portal>
-        <Dialog
-          visible={isDialogVisible}
-          onDismiss={() => setIsDialogVisible(false)}
-        >
+        <Dialog visible={isDialogVisible} onDismiss={handleCloseDialog}>
           <Dialog.Title>New Recipe</Dialog.Title>
           <Dialog.Content>
             <TextInput
-              label="Recipe Name"
-              value={recipeForm.name}
+              label={getRecipeLabel()}
+              value={recipeForm.title}
               onChangeText={(text) =>
-                setRecipeForm((prev) => ({ ...prev, name: text }))
+                setRecipeForm((prev) => ({ ...prev, title: text }))
               }
               style={styles.input}
-              error={!!errors.name}
+              error={!!errors.title}
             />
-            {errors.name && <HelperText type="error">{errors.name}</HelperText>}
-
-            <MultiSelectDropdown
-              loading={ingredientsLoading}
-              options={ingredients}
-              value={recipeForm.ingredients}
-              onAddItem={addIngredient}
-              onSelect={handleSelectIngredient}
-              closeMenuOnSelect={false}
-            />
-            {errors.ingredients && (
-              <HelperText type="error">{errors.ingredients}</HelperText>
+            {errors.title && (
+              <HelperText type="error">{errors.title}</HelperText>
             )}
+
+            <View style={styles.input}>
+              <InputDropdown
+                ref={inputRef}
+                loading={ingredientsLoading}
+                options={ingredients}
+                onAddItem={addIngredient}
+                onSelect={(ingredient) => {
+                  setRecipeForm((prev) => ({
+                    ...prev,
+                    ingredient: ingredient._id,
+                  }));
+                }}
+              />
+              {errors.ingredients && (
+                <HelperText type="error">{errors.ingredients}</HelperText>
+              )}
+            </View>
+            <View style={styles.input}>
+              <View style={styles.quantity}>
+                <TextInput
+                  label="Quantity"
+                  value={recipeForm.quantity}
+                  onChangeText={(text) =>
+                    setRecipeForm({ ...recipeForm, quantity: text })
+                  }
+                  keyboardType="numeric"
+                  error={!!errors.quantity}
+                  style={{ flex: 1 }}
+                  dense={true}
+                />
+                {errors.quantity && (
+                  <HelperText type="error">{errors.quantity}</HelperText>
+                )}
+                <Menu
+                  visible={unitMenuVisible}
+                  onDismiss={() => setUnitMenuVisible(false)}
+                  anchor={
+                    <Button
+                      mode="contained-tonal"
+                      onPress={() => setUnitMenuVisible((prev) => !prev)}
+                    >
+                      {recipeForm.unit || <FaBalanceScale />}
+                    </Button>
+                  }
+                >
+                  {[<FaBalanceScale key="none" />, "kg", "g", "l", "ml"].map(
+                    (unit) => (
+                      <Menu.Item
+                        key={unit}
+                        onPress={() => {
+                          setRecipeForm((prev) => ({
+                            ...prev,
+                            unit,
+                          }));
+                          setUnitMenuVisible(false);
+                        }}
+                        title={unit}
+                      />
+                    )
+                  )}
+                </Menu>
+              </View>
+            </View>
+            <View style={styles.addButton}>
+              <Button
+                mode="contained"
+                onPress={handleAddIngredientToRecipe}
+                loading={isAddingItem}
+              >
+                Add Ingredient
+              </Button>
+            </View>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setIsDialogVisible(false)}>Cancel</Button>
+            <Button onPress={handleCloseDialog}>Cancel</Button>
             <Button onPress={handleSaveRecipe}>Save</Button>
           </Dialog.Actions>
         </Dialog>
@@ -241,35 +484,23 @@ const Recipes = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
-  },
-  card: {
-    marginBottom: 16,
-  },
-  chip: {
-    marginVertical: 4,
-  },
-  addButton: {
-    marginTop: 16,
+    flexDirection: "column",
+    width: "100%",
+    height: "100%",
+    gap: 8,
   },
   input: {
     marginBottom: 16,
+    height: 56,
+    flexShrink: 1,
   },
-  dropdownInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-    borderRadius: 4,
-  },
-  ingredientRow: {
+  quantity: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 8,
+    justifyContent: "space-between",
+    gap: ".5em",
   },
-  quantityInput: {
-    flex: 1,
-    marginRight: 8,
-  },
+  addButton: {},
 });
 
 export default Recipes;

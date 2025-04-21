@@ -5,8 +5,10 @@ import { HomeContext } from "../../HomeContext";
 import { FlatList } from "react-native-web";
 import TaskRenderer from "./TaskRenderer";
 import dayjs from "dayjs";
+import { useIsFocused } from "@react-navigation/native";
 
 const Home = () => {
+  const isFocused = useIsFocused();
   const { user, redirectToLogin, showSnackbarMessage } =
     useContext(HomeContext);
   const [tasks, setTasks] = useState([]);
@@ -154,9 +156,10 @@ const Home = () => {
   };
 
   useEffect(() => {
+    if (!isFocused) return;
     fetchUserTasks();
     fetchOwnerOptions();
-  }, []);
+  }, [isFocused]);
 
   if (loading) {
     return (

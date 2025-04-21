@@ -1,14 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { View, StyleSheet } from "react-native";
 import { TextInput, IconButton, Menu } from "react-native-paper";
 import PropTypes from "prop-types";
 
-const InputDropdown = ({
-  loading = false,
-  options = [],
-  onSelect = () => {},
-  onAddItem = () => {},
-}) => {
+const InputDropdown = forwardRef(function InputDropdown(
+  { loading = false, options = [], onSelect = () => {}, onAddItem = () => {} },
+  ref
+) {
   const [inputValue, setInputValue] = useState("");
   const [menuVisible, setMenuVisible] = useState(false);
 
@@ -37,6 +40,12 @@ const InputDropdown = ({
     setInputValue(capValue);
     closeMenu();
   };
+
+  useImperativeHandle(ref, () => ({
+    clearInput() {
+      setInputValue("");
+    },
+  }));
 
   const styles = StyleSheet.create({
     container: {
@@ -137,7 +146,7 @@ const InputDropdown = ({
       </View>
     </View>
   );
-};
+});
 InputDropdown.propTypes = {
   loading: PropTypes.bool,
   options: PropTypes.arrayOf(
@@ -147,6 +156,7 @@ InputDropdown.propTypes = {
   ),
   onSelect: PropTypes.func,
   onAddItem: PropTypes.func,
+  value: PropTypes.string,
 };
 
 export default InputDropdown;

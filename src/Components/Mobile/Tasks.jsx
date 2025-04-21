@@ -14,8 +14,10 @@ import { PaperSelect } from "react-native-paper-select";
 import { FlatList, View } from "react-native-web";
 import TaskRenderer from "./TaskRenderer";
 import { HomeContext } from "../../HomeContext";
+import { useIsFocused } from "@react-navigation/native";
 
 const Tasks = () => {
+  const isFocused = useIsFocused();
   const { user, redirectToLogin, showSnackbarMessage } =
     useContext(HomeContext);
   const [tasks, setTasks] = useState([]);
@@ -246,9 +248,10 @@ const Tasks = () => {
   }, [showTasksDone]);
 
   useEffect(() => {
+    if (!isFocused) return;
     fetchTasks();
     fetchOwnerOptions();
-  }, []);
+  }, [isFocused]);
 
   return (
     <View style={styles.container}>

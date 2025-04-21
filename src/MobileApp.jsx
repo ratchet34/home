@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Appearance } from "react-native";
-import { Appbar, Drawer, PaperProvider, Snackbar } from "react-native-paper";
+import {
+  Appbar,
+  Divider,
+  Drawer,
+  PaperProvider,
+  Snackbar,
+} from "react-native-paper";
 import PropTypes from "prop-types";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
@@ -17,6 +23,7 @@ import "./css/mobile/app.css";
 import LoadingScreen from "./Components/Mobile/LoadingScreen";
 import Home from "./Components/Mobile/Home";
 import Recipes from "./Components/Mobile/Recipes";
+import Admin from "./Components/Mobile/Admin";
 
 const HomeScreen = () => (
   <View style={styles.content}>
@@ -25,7 +32,7 @@ const HomeScreen = () => (
 );
 
 const TasksScreen = () => (
-  <View style={styles.content} id="tasks-screen">
+  <View style={styles.content}>
     <Tasks />
   </View>
 );
@@ -42,25 +49,31 @@ const RecipesScreen = () => (
   </View>
 );
 
+const AdminScreen = () => (
+  <View style={styles.content}>
+    <Admin />
+  </View>
+);
+
 const CustomDrawerContent = ({ navigation, state }) => {
   const active = state.routeNames[state.index];
   return (
     <Drawer.Section title="Navigation" style={styles.drawer}>
       <Drawer.Item
         label="Home"
-        icon={() => <FaHome />}
+        icon="home"
         active={active === "Home"}
         onPress={() => navigation.navigate("Home")}
       />
       <Drawer.Item
         label="Tasks"
-        icon={() => <FaListCheck />}
+        icon="list-status"
         active={active === "Tasks"}
         onPress={() => navigation.navigate("Tasks")}
       />
       <Drawer.Item
         label="Shopping"
-        icon={() => <FaShoppingCart />}
+        icon="cart-variant"
         active={active === "Shopping"}
         onPress={() => navigation.navigate("Shopping")}
       />
@@ -69,6 +82,13 @@ const CustomDrawerContent = ({ navigation, state }) => {
         icon={() => <FaBook />}
         active={active === "Recipes"}
         onPress={() => navigation.navigate("Recipes")}
+      />
+      <Divider style={{ marginVertical: 8 }} />
+      <Drawer.Item
+        label="Admin"
+        icon={() => <FaListCheck />}
+        active={active === "Admin"}
+        onPress={() => navigation.navigate("Admin")}
       />
     </Drawer.Section>
   );
@@ -224,6 +244,10 @@ const MobileApp = () => {
                       <DrawerNavigator.Screen
                         name="Recipes"
                         component={RecipesScreen}
+                      />
+                      <DrawerNavigator.Screen
+                        name="Admin"
+                        component={AdminScreen}
                       />
                     </DrawerNavigator.Navigator>
                   </NavigationContainer>

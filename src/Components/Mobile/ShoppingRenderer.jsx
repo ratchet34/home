@@ -19,8 +19,6 @@ const ShoppingRenderer = ({
   return (
     <Card style={styles.card}>
       <Card.Title
-        style={{ paddingLeft: 8 }}
-        titleStyle={{ paddingRight: 8 }}
         title={
           <View style={styles.titleAndButtons}>
             <Text>
